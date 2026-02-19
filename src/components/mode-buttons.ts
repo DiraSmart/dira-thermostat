@@ -62,32 +62,35 @@ const MODE_TYPES: Record<ControlType, ModeTypeConfig> = {
   },
 };
 
-// HVAC mode sort order
-const HVAC_ORDER = ["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"];
+const HVAC_ORDER = [
+  "off",
+  "heat",
+  "cool",
+  "heat_cool",
+  "auto",
+  "dry",
+  "fan_only",
+];
 
 export function renderAllControls(
   hass: HomeAssistant,
   stateObj: HassEntity,
   config: DiraCardConfig,
+  effectiveControl: ControlConfig | false,
   onModeSelect: (type: ControlType, value: string) => void
 ): TemplateResult | typeof nothing {
-  if (config.control === false) return nothing;
-
-  const control: ControlConfig =
-    typeof config.control === "object" && config.control !== null
-      ? config.control
-      : { hvac: true };
+  if (effectiveControl === false) return nothing;
 
   const lang = hass.language ?? "en";
   const layout = config.layout?.mode ?? {};
   const showNames = layout.names !== false;
   const showIcons = layout.icons !== false;
-  const showHeadings = layout.headings !== false;
+  const showHeadings = layout.headings === true;
 
   const sections: TemplateResult[] = [];
 
   for (const typeKey of ["hvac", "fan", "preset", "swing"] as ControlType[]) {
-    const typeConfig = control[typeKey];
+    const typeConfig = effectiveControl[typeKey];
     if (typeConfig === false || typeConfig === undefined) continue;
 
     const modeType = MODE_TYPES[typeKey];
@@ -125,12 +128,10 @@ function renderModeSection(
   showHeadings: boolean,
   onSelect: (value: string) => void
 ): TemplateResult | typeof nothing {
-  // Get available modes from entity
   const availableModes: string[] =
     stateObj.attributes[modeType.attributeModes] ?? [];
   if (availableModes.length === 0) return nothing;
 
-  // Check _hide_when_off
   if (
     typeof typeConfig === "object" &&
     typeConfig._hide_when_off &&
@@ -139,26 +140,23 @@ function renderModeSection(
     return nothing;
   }
 
-  // Get active mode
   const activeMode =
     modeType.attributeActive === "__state__"
       ? stateObj.state
       : (stateObj.attributes[modeType.attributeActive] as string) ?? "";
 
-  // Custom heading
   const heading =
     typeof typeConfig === "object" && typeConfig._name
       ? typeConfig._name
       : localize(modeType.headingKey, lang);
 
-  // Build options
   let modes = [...availableModes];
 
-  // Sort HVAC modes
   if (modeType.type === "hvac") {
     modes.sort(
       (a, b) =>
-        (HVAC_ORDER.indexOf(a) ?? 99) - (HVAC_ORDER.indexOf(b) ?? 99)
+        (HVAC_ORDER.indexOf(a) !== -1 ? HVAC_ORDER.indexOf(a) : 99) -
+        (HVAC_ORDER.indexOf(b) !== -1 ? HVAC_ORDER.indexOf(b) : 99)
     );
   }
 
@@ -168,7 +166,10 @@ function renderModeSection(
     let optConfig: ModeOptionConfig | undefined;
     if (typeof typeConfig === "object") {
       const raw = typeConfig[mode];
-      if (raw === false || (typeof raw === "object" && raw?.include === false)) {
+      if (
+        raw === false ||
+        (typeof raw === "object" && raw?.include === false)
+      ) {
         continue;
       }
       if (typeof raw === "object") {
@@ -195,29 +196,32 @@ function renderModeSection(
 
   if (options.length === 0) return nothing;
 
+  // Segmented control style
   return html`
     <div class="mode-section">
-      ${showHeadings ? html`<div class="mode-heading">${heading}</div>` : nothing}
-      <div class="mode-buttons">
+      ${showHeadings
+        ? html`<div class="mode-heading">${heading}</div>`
+        : nothing}
+      <div class="segmented-control">
         ${options.map((opt) => {
           const isActive = opt.value === activeMode;
           const rgb = hexToRgb(opt.color);
-          const activeBg = `background-color: rgba(${rgb}, 0.2)`;
-          const activeColor = `color: ${opt.color}`;
-          const style = isActive ? `${activeBg}; ${activeColor}` : "";
-          const iconOnly = showIcons && !showNames;
+          const style = isActive
+            ? `background-color: rgba(${rgb}, 0.2); color: ${opt.color};`
+            : "";
 
           return html`
             <button
-              class="mode-btn ${isActive ? "active" : ""} ${iconOnly ? "icon-only" : ""}"
+              class="segment ${isActive ? "active" : ""}"
               style="${style}"
               @click=${() => onSelect(opt.value)}
+              title=${opt.name}
             >
               ${showIcons
                 ? html`<ha-icon .icon=${opt.icon}></ha-icon>`
                 : nothing}
-              ${showNames && !iconOnly
-                ? html`<span>${opt.name}</span>`
+              ${showNames
+                ? html`<span class="segment-label">${opt.name}</span>`
                 : nothing}
             </button>
           `;

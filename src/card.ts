@@ -1,5 +1,5 @@
 import { LitElement, html, nothing, PropertyValues } from "lit";
-import { property, state } from "lit/decorators.js";
+import { state } from "lit/decorators.js";
 import {
   HomeAssistant,
   HassEntity,
@@ -21,11 +21,15 @@ import { renderSensors } from "./components/sensors";
 
 const DEBOUNCE_TIMEOUT = 500;
 
+const AUTO_COLLAPSE_MS = 10_000;
+
 export class DiraThermostatCard extends LitElement {
   @state() private _hass!: HomeAssistant;
   @state() private _config!: DiraCardConfig;
-  @state() private _showPopup = false;
+  @state() private _expanded = false;
   @state() private _pendingValues: Record<string, number> = {};
+
+  private _collapseTimer?: ReturnType<typeof setTimeout>;
 
   private _debouncedCallService = debounce((data: Record<string, any>) => {
     const serviceConfig = this._config.service;
@@ -71,10 +75,8 @@ export class DiraThermostatCard extends LitElement {
     if (!config.entity) {
       throw new Error("You must define an entity");
     }
-    this._config = {
-      ...config,
-      control: this._normalizeControl(config.control),
-    };
+    this._normalizedControl = this._normalizeControl(config.control);
+    this._config = config;
   }
 
   getCardSize(): number {
@@ -84,12 +86,14 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Config Normalization ----
 
+  private _normalizedControl: ControlConfig | false | "auto" = "auto";
+
   private _normalizeControl(
     control: DiraCardConfig["control"]
-  ): ControlConfig | false {
+  ): ControlConfig | false | "auto" {
     if (control === false) return false;
     if (control === undefined || control === null) {
-      return { hvac: true };
+      return "auto";
     }
     if (Array.isArray(control)) {
       const result: Record<string, boolean> = {};
@@ -99,6 +103,19 @@ export class DiraThermostatCard extends LitElement {
       return result as unknown as ControlConfig;
     }
     return control;
+  }
+
+  private _getEffectiveControl(stateObj: HassEntity): ControlConfig | false {
+    const control = this._normalizedControl;
+    if (control === false) return false;
+    if (control === "auto") {
+      const result: ControlConfig = { hvac: true };
+      if (stateObj.attributes.fan_modes?.length > 0) result.fan = true;
+      if (stateObj.attributes.preset_modes?.length > 0) result.preset = true;
+      if (stateObj.attributes.swing_modes?.length > 0) result.swing = true;
+      return result;
+    }
+    return control as ControlConfig;
   }
 
   // ---- Temperature Callbacks ----
@@ -161,11 +178,44 @@ export class DiraThermostatCard extends LitElement {
     }
 
     forwardHaptic(this, "light");
+    this._resetCollapseTimer();
+  }
+
+  // ---- Expand / Collapse (for compact mode) ----
+
+  private _expand(): void {
+    this._expanded = true;
+    this._resetCollapseTimer();
+  }
+
+  private _collapse(): void {
+    this._expanded = false;
+    this._clearCollapseTimer();
+  }
+
+  private _resetCollapseTimer(): void {
+    this._clearCollapseTimer();
+    this._collapseTimer = setTimeout(() => {
+      this._expanded = false;
+    }, AUTO_COLLAPSE_MS);
+  }
+
+  private _clearCollapseTimer(): void {
+    if (this._collapseTimer !== undefined) {
+      clearTimeout(this._collapseTimer);
+      this._collapseTimer = undefined;
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._clearCollapseTimer();
   }
 
   // ---- Mode Select Handler ----
 
   private _onModeSelect(type: ControlType, value: string): void {
+    this._resetCollapseTimer();
     const serviceMap: Record<ControlType, [string, string, string]> = {
       hvac: ["climate", "set_hvac_mode", "hvac_mode"],
       fan: ["climate", "set_fan_mode", "fan_mode"],
@@ -199,17 +249,45 @@ export class DiraThermostatCard extends LitElement {
       `;
     }
 
-    // Popup mode: compact card
-    if (this._config.popup && !this._showPopup) {
+    // Compact mode (popup config): show compact, expand inline on click
+    if (this._config.popup) {
+      const effectiveControl = this._getEffectiveControl(stateObj);
       return html`
         <ha-card>
           ${this._renderCompact(stateObj)}
+          ${this._expanded
+            ? html`
+                <div class="expand-section">
+                  ${this._config.hide?.temperature !== true
+                    ? renderTemperature(
+                        this,
+                        this._hass,
+                        stateObj,
+                        this._config,
+                        this._pendingValues,
+                        this._getTemperatureCallbacks()
+                      )
+                    : nothing}
+                  ${renderAllControls(
+                    this._hass,
+                    stateObj,
+                    this._config,
+                    effectiveControl,
+                    (type, value) => this._onModeSelect(type, value)
+                  )}
+                  ${this._config.hide?.state !== true
+                    ? renderSensors(this, this._hass, stateObj, this._config)
+                    : nothing}
+                </div>
+              `
+            : nothing}
         </ha-card>
-        ${this._showPopup ? this._renderPopup(stateObj) : nothing}
       `;
     }
 
     // Full card
+    const effectiveControl = this._getEffectiveControl(stateObj);
+
     return html`
       <ha-card>
         ${renderHeader(this, this._hass, stateObj, this._config)}
@@ -227,13 +305,13 @@ export class DiraThermostatCard extends LitElement {
           this._hass,
           stateObj,
           this._config,
+          effectiveControl,
           (type, value) => this._onModeSelect(type, value)
         )}
         ${this._config.hide?.state !== true
           ? renderSensors(this, this._hass, stateObj, this._config)
           : nothing}
       </ha-card>
-      ${this._showPopup ? this._renderPopup(stateObj) : nothing}
     `;
   }
 
@@ -287,7 +365,7 @@ export class DiraThermostatCard extends LitElement {
       <div class="compact">
         <div
           class="compact-left"
-          @click=${() => (this._showPopup = true)}
+          @click=${() => this._expand()}
         >
           <div class="icon-shape" style="${iconBg}">
             <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
@@ -332,51 +410,6 @@ export class DiraThermostatCard extends LitElement {
               </div>
             `
           : nothing}
-      </div>
-    `;
-  }
-
-  // ---- Popup Render ----
-
-  private _renderPopup(stateObj: HassEntity) {
-    const name = getEntityName(stateObj, this._config.name);
-
-    return html`
-      <div
-        class="popup-overlay"
-        @click=${(e: Event) => {
-          if ((e.target as HTMLElement).classList.contains("popup-overlay")) {
-            this._showPopup = false;
-          }
-        }}
-      >
-        <div class="popup-content">
-          <div class="popup-header">
-            <div class="name" style="font-size: 18px; font-weight: 600;">${name}</div>
-            <button class="popup-close" @click=${() => (this._showPopup = false)}>
-              <ha-icon .icon=${"mdi:close"}></ha-icon>
-            </button>
-          </div>
-          ${this._config.hide?.temperature !== true
-            ? renderTemperature(
-                this,
-                this._hass,
-                stateObj,
-                this._config,
-                this._pendingValues,
-                this._getTemperatureCallbacks()
-              )
-            : nothing}
-          ${renderAllControls(
-            this._hass,
-            stateObj,
-            this._config,
-            (type, value) => this._onModeSelect(type, value)
-          )}
-          ${this._config.hide?.state !== true
-            ? renderSensors(this, this._hass, stateObj, this._config)
-            : nothing}
-        </div>
       </div>
     `;
   }

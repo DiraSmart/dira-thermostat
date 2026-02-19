@@ -196,7 +196,7 @@ export const cardStyles = css`
     height: 32px;
   }
 
-  /* ---- Mode Buttons ---- */
+  /* ---- Mode Controls (Segmented) ---- */
   .mode-section {
     margin-top: var(--dira-spacing);
   }
@@ -211,32 +211,36 @@ export const cardStyles = css`
     padding: 0 2px;
   }
 
-  .mode-buttons {
+  .segmented-control {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
+    background: rgba(var(--dira-rgb-text), 0.05);
+    border-radius: var(--dira-radius-button);
+    padding: 3px;
+    gap: 2px;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding-bottom: 2px;
   }
 
-  .mode-buttons::-webkit-scrollbar {
+  .segmented-control::-webkit-scrollbar {
     display: none;
   }
 
-  .mode-btn {
-    display: inline-flex;
+  .segment {
+    flex: 1;
+    min-width: 0;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    flex-shrink: 0;
-    border-radius: var(--dira-radius-button);
+    justify-content: center;
+    gap: 4px;
+    padding: 7px 8px;
+    border-radius: calc(var(--dira-radius-button) - 2px);
     border: none;
-    background: rgba(var(--dira-rgb-text), 0.05);
-    color: var(--primary-text-color);
-    font-size: 12px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    font-size: 11px;
     font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
     transition: all var(--dira-transition);
     -webkit-tap-highlight-color: transparent;
@@ -246,25 +250,27 @@ export const cardStyles = css`
     white-space: nowrap;
   }
 
-  .mode-btn:hover {
-    background: rgba(var(--dira-rgb-text), 0.1);
+  .segment:hover {
+    background: rgba(var(--dira-rgb-text), 0.06);
   }
 
-  .mode-btn:active {
-    transform: scale(0.95);
+  .segment:active {
+    transform: scale(0.97);
   }
 
-  .mode-btn ha-icon {
-    --mdc-icon-size: 18px;
+  .segment ha-icon {
+    --mdc-icon-size: 16px;
+    flex-shrink: 0;
   }
 
-  .mode-btn.icon-only {
-    padding: 8px;
+  .segment-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* Active mode button - color set via inline style */
-  .mode-btn.active {
+  .segment.active {
     font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   /* ---- Sensors ---- */
@@ -369,69 +375,24 @@ export const cardStyles = css`
     opacity: 0.8;
   }
 
-  /* ---- Popup ---- */
-  .popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 999;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    animation: dira-fade-in 200ms ease-out;
-    -webkit-tap-highlight-color: transparent;
+  /* ---- Expand Section (compact mode) ---- */
+  .expand-section {
+    overflow: hidden;
+    animation: dira-expand 280ms ease-out;
+    border-top: 1px solid rgba(var(--dira-rgb-text), 0.06);
+    margin-top: var(--dira-spacing);
+    padding-top: 4px;
   }
 
-  @media (min-width: 600px) {
-    .popup-overlay {
-      align-items: center;
+  @keyframes dira-expand {
+    from {
+      max-height: 0;
+      opacity: 0;
     }
-  }
-
-  .popup-content {
-    background: var(--card-background-color, var(--ha-card-background, #fff));
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    width: 100%;
-    max-width: 420px;
-    max-height: 85vh;
-    overflow-y: auto;
-    animation: dira-slide-up 280ms ease-out;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
-  }
-
-  @media (min-width: 600px) {
-    .popup-content {
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      animation: dira-scale-in 280ms ease-out;
+    to {
+      max-height: 500px;
+      opacity: 1;
     }
-  }
-
-  .popup-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .popup-close {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(var(--dira-rgb-text), 0.05);
-    color: var(--primary-text-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    line-height: 0;
-  }
-
-  .popup-close ha-icon {
-    --mdc-icon-size: 18px;
   }
 
   /* ---- Not found ---- */
@@ -443,18 +404,4 @@ export const cardStyles = css`
   }
 
   /* ---- Animations ---- */
-  @keyframes dira-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes dira-slide-up {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
-
-  @keyframes dira-scale-in {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
 `;
