@@ -42,7 +42,7 @@ const MODE_TYPES: Record<ControlType, ModeTypeConfig> = {
     attributeActive: "fan_mode",
     headingKey: "card.fan_modes",
     getIcon: getFanIcon,
-    getColor: () => "#8a8a8a",
+    getColor: () => "#4dd0e1",
   },
   preset: {
     type: "preset",
@@ -50,7 +50,7 @@ const MODE_TYPES: Record<ControlType, ModeTypeConfig> = {
     attributeActive: "preset_mode",
     headingKey: "card.preset_modes",
     getIcon: getPresetIcon,
-    getColor: () => "#8a8a8a",
+    getColor: () => "#b39ddb",
   },
   swing: {
     type: "swing",
@@ -58,7 +58,7 @@ const MODE_TYPES: Record<ControlType, ModeTypeConfig> = {
     attributeActive: "swing_mode",
     headingKey: "card.swing_modes",
     getIcon: getSwingIcon,
-    getColor: () => "#8a8a8a",
+    getColor: () => "#ffb74d",
   },
 };
 
