@@ -152,14 +152,29 @@ function renderModeSection(
       ? typeConfig._name
       : localize(modeType.headingKey, lang);
 
-  let modes = [...availableModes];
+  // If user defined modes in config, use their key order; otherwise use entity order
+  let modes: string[];
+  const hasCustomOrder =
+    typeof typeConfig === "object" &&
+    Object.keys(typeConfig).some((k) => !k.startsWith("_"));
 
-  if (modeType.type === "hvac") {
-    modes.sort(
-      (a, b) =>
-        (HVAC_ORDER.indexOf(a) !== -1 ? HVAC_ORDER.indexOf(a) : 99) -
-        (HVAC_ORDER.indexOf(b) !== -1 ? HVAC_ORDER.indexOf(b) : 99)
+  if (hasCustomOrder) {
+    // User-defined keys first (in YAML order), then any remaining from entity
+    const configKeys = Object.keys(typeConfig as ModeControlConfig).filter(
+      (k) => !k.startsWith("_")
     );
+    const ordered = configKeys.filter((k) => availableModes.includes(k));
+    const remaining = availableModes.filter((m) => !configKeys.includes(m));
+    modes = [...ordered, ...remaining];
+  } else {
+    modes = [...availableModes];
+    if (modeType.type === "hvac") {
+      modes.sort(
+        (a, b) =>
+          (HVAC_ORDER.indexOf(a) !== -1 ? HVAC_ORDER.indexOf(a) : 99) -
+          (HVAC_ORDER.indexOf(b) !== -1 ? HVAC_ORDER.indexOf(b) : 99)
+      );
+    }
   }
 
   const options: ProcessedModeOption[] = [];
