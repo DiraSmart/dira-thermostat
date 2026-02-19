@@ -233,6 +233,18 @@ export class DiraThermostatCard extends LitElement {
       .catch(() => forwardHaptic(this, "failure"));
   }
 
+  // ---- Helpers ----
+
+  private _shouldShowTemperature(stateObj: HassEntity): boolean {
+    if (this._config.hide?.temperature === true) return false;
+    const state = stateObj.state;
+    // Hide temperature when off or fan_only (no temp target makes sense)
+    if (state === "off" || state === "unavailable" || state === "fan_only") {
+      return false;
+    }
+    return true;
+  }
+
   // ---- Render ----
 
   render() {
@@ -258,7 +270,7 @@ export class DiraThermostatCard extends LitElement {
           ${this._expanded
             ? html`
                 <div class="expand-section">
-                  ${this._config.hide?.temperature !== true
+                  ${this._shouldShowTemperature(stateObj)
                     ? renderTemperature(
                         this,
                         this._hass,
@@ -291,7 +303,7 @@ export class DiraThermostatCard extends LitElement {
     return html`
       <ha-card>
         ${renderHeader(this, this._hass, stateObj, this._config)}
-        ${this._config.hide?.temperature !== true
+        ${this._shouldShowTemperature(stateObj)
           ? renderTemperature(
               this,
               this._hass,
@@ -326,6 +338,7 @@ export class DiraThermostatCard extends LitElement {
     const color = getModeColor(hvacMode, this._config.colors);
     const rgb = hexToRgb(color);
     const isOff = hvacMode === "off" || hvacMode === "unavailable";
+    const hideTemp = isOff || hvacMode === "fan_only";
     const icon = this._config.icon ?? getModeIcon(hvacMode);
 
     // Secondary: mode + optional fan speed
@@ -380,7 +393,7 @@ export class DiraThermostatCard extends LitElement {
             </div>
           </div>
         </div>
-        ${!isOff && targetValue !== undefined
+        ${!hideTemp && targetValue !== undefined
           ? html`
               <div class="compact-controls">
                 <button

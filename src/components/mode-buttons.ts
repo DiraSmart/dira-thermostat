@@ -132,11 +132,13 @@ function renderModeSection(
     stateObj.attributes[modeType.attributeModes] ?? [];
   if (availableModes.length === 0) return nothing;
 
-  if (
-    typeof typeConfig === "object" &&
-    typeConfig._hide_when_off &&
-    stateObj.state === "off"
-  ) {
+  // For non-hvac types, hide when off by default (user can override with _hide_when_off: false)
+  const hideWhenOff =
+    typeof typeConfig === "object" && typeConfig._hide_when_off !== undefined
+      ? typeConfig._hide_when_off
+      : modeType.type !== "hvac"; // default: true for fan/preset/swing, false for hvac
+
+  if (hideWhenOff && (stateObj.state === "off" || stateObj.state === "unavailable")) {
     return nothing;
   }
 
