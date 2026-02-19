@@ -188,14 +188,16 @@ export class DiraThermostatCard extends LitElement {
     this._longPressFired = false;
     this._longPressTimer = setTimeout(() => {
       this._longPressFired = true;
-      openMoreInfo(this, this._config.entity);
       forwardHaptic(this, "light");
     }, 500);
   };
 
   private _onPointerUp = (): void => {
     clearTimeout(this._longPressTimer);
-    if (this._longPressFired) return;
+    if (this._longPressFired) {
+      openMoreInfo(this, this._config.entity);
+      return;
+    }
     // Short click
     if (this._config.popup) {
       this._expanded ? this._collapse() : this._expand();
