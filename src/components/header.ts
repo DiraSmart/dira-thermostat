@@ -7,15 +7,27 @@ import {
 } from "../types";
 import { getModeColor, hexToRgb } from "../utils/colors";
 import { getModeIcon, getFanIcon } from "../utils/icons";
-import { getEntityName, formatTemperature } from "../utils/entity";
+import { getEntityName, formatTemperature, getUnit } from "../utils/entity";
 import { localize } from "../localize";
 import { openMoreInfo } from "../utils/fire-event";
+
+export interface HeaderTempControls {
+  targetValue: number | undefined;
+  isUpdating: boolean;
+  minTemp: number;
+  maxTemp: number;
+  decimals: number;
+  unit: string;
+  onIncrement: () => void;
+  onDecrement: () => void;
+}
 
 export function renderHeader(
   host: HTMLElement,
   hass: HomeAssistant,
   stateObj: HassEntity,
-  config: DiraCardConfig
+  config: DiraCardConfig,
+  tempControls?: HeaderTempControls
 ): TemplateResult | typeof nothing {
   if (config.header === false) return nothing;
 
@@ -55,12 +67,12 @@ export function renderHeader(
   // Current temp + humidity below name
   const currentTemp = stateObj.attributes.current_temperature;
   const humidity = stateObj.attributes.current_humidity;
-  const unit = stateObj.attributes.unit_of_measurement ?? "°C";
+  const statsUnit = stateObj.attributes.unit_of_measurement ?? "°C";
 
   const statsItems: string[] = [];
   if (currentTemp !== undefined && currentTemp !== null) {
     statsItems.push(
-      `${formatTemperature(currentTemp, config.decimals ?? 1)} ${unit}`
+      `${formatTemperature(currentTemp, config.decimals ?? 1)} ${statsUnit}`
     );
   }
   if (humidity !== undefined && humidity !== null) {
@@ -72,12 +84,21 @@ export function renderHeader(
     : `background-color: rgba(${rgb}, 0.2)`;
   const iconColor = isOff ? "" : `color: ${color}`;
 
+  // Temperature controls on the right (if provided and valid)
+  const tc = tempControls;
+  const showTempControls = tc && tc.targetValue !== undefined;
+
   return html`
     <div
       class="header"
       @click=${(e: Event) => {
         const target = e.target as HTMLElement;
-        if (!target.closest("ha-switch") && !target.closest(".fault-icon")) {
+        if (
+          !target.closest("ha-switch") &&
+          !target.closest(".fault-icon") &&
+          !target.closest(".temp-button") &&
+          !target.closest(".compact-controls")
+        ) {
           openMoreInfo(host, config.entity);
         }
       }}
@@ -103,10 +124,41 @@ export function renderHeader(
             : nothing}
         </div>
       </div>
-      <div class="header-actions">
-        ${renderFaults(host, hass, headerConfig.faults)}
-        ${renderToggle(host, hass, headerConfig.toggle)}
-      </div>
+      ${showTempControls
+        ? html`
+            <div class="compact-controls">
+              <button
+                class="temp-button"
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  tc!.onDecrement();
+                }}
+                ?disabled=${tc!.targetValue! <= tc!.minTemp}
+              >
+                <ha-icon .icon=${"mdi:minus"}></ha-icon>
+              </button>
+              <div class="compact-temp ${tc!.isUpdating ? "updating" : ""}">
+                ${formatTemperature(tc!.targetValue!, tc!.decimals)}
+                <span class="unit">${tc!.unit}</span>
+              </div>
+              <button
+                class="temp-button"
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  tc!.onIncrement();
+                }}
+                ?disabled=${tc!.targetValue! >= tc!.maxTemp}
+              >
+                <ha-icon .icon=${"mdi:plus"}></ha-icon>
+              </button>
+            </div>
+          `
+        : html`
+            <div class="header-actions">
+              ${renderFaults(host, hass, headerConfig.faults)}
+              ${renderToggle(host, hass, headerConfig.toggle)}
+            </div>
+          `}
     </div>
   `;
 }

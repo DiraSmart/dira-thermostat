@@ -14,7 +14,7 @@ import { getModeIcon } from "./utils/icons";
 import { isDualSetpoint, formatTemperature, getUnit, getEntityName } from "./utils/entity";
 import { debounce } from "./utils/debounce";
 import { fireEvent, forwardHaptic, openMoreInfo } from "./utils/fire-event";
-import { renderHeader } from "./components/header";
+import { renderHeader, HeaderTempControls } from "./components/header";
 import { renderTemperature, TemperatureCallbacks } from "./components/temperature";
 import { renderAllControls } from "./components/mode-buttons";
 import { renderSensors } from "./components/sensors";
@@ -235,6 +235,32 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Helpers ----
 
+  private _getHeaderTempControls(stateObj: HassEntity): HeaderTempControls | undefined {
+    if (this._config.hide?.temperature === true) return undefined;
+    const state = stateObj.state;
+    if (state === "off" || state === "unavailable" || state === "fan_only") {
+      return undefined;
+    }
+    // Only for single setpoint (dual uses its own section)
+    if (isDualSetpoint(stateObj)) return undefined;
+
+    const targetValue =
+      this._pendingValues["temperature"] ?? stateObj.attributes.temperature;
+    if (targetValue === undefined) return undefined;
+
+    const callbacks = this._getTemperatureCallbacks();
+    return {
+      targetValue,
+      isUpdating: this._pendingValues["temperature"] !== undefined,
+      minTemp: stateObj.attributes.min_temp ?? 7,
+      maxTemp: stateObj.attributes.max_temp ?? 35,
+      decimals: this._config.decimals ?? 1,
+      unit: getUnit(stateObj, this._config.unit),
+      onIncrement: () => callbacks.onIncrement("temperature"),
+      onDecrement: () => callbacks.onDecrement("temperature"),
+    };
+  }
+
   private _shouldShowTemperature(stateObj: HassEntity): boolean {
     if (this._config.hide?.temperature === true) return false;
     const state = stateObj.state;
@@ -289,11 +315,12 @@ export class DiraThermostatCard extends LitElement {
 
     // Full card
     const effectiveControl = this._getEffectiveControl(stateObj);
+    const headerTemp = this._getHeaderTempControls(stateObj);
 
     return html`
       <ha-card>
-        ${renderHeader(this, this._hass, stateObj, this._config)}
-        ${this._shouldShowTemperature(stateObj)
+        ${renderHeader(this, this._hass, stateObj, this._config, headerTemp)}
+        ${this._shouldShowTemperature(stateObj) && isDualSetpoint(stateObj)
           ? renderTemperature(
               this,
               this._hass,
