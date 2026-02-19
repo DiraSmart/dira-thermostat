@@ -6,6 +6,7 @@ import {
   DiraCardConfig,
   ControlConfig,
   ControlType,
+  HeaderConfig,
 } from "./types";
 import { cardStyles } from "./styles";
 import { localize } from "./localize";
@@ -328,7 +329,11 @@ export class DiraThermostatCard extends LitElement {
   // ---- Header Row Render (shared by compact and full mode) ----
 
   private _renderCompact(stateObj: HassEntity) {
-    const name = getEntityName(stateObj, this._config.name);
+    const headerConfig: HeaderConfig =
+      typeof this._config.header === "object" ? this._config.header : {};
+
+    const headerName = headerConfig.name !== false ? headerConfig.name : undefined;
+    const name = getEntityName(stateObj, headerName ?? this._config.name);
     const hvacMode = stateObj.state;
     const lang = this._hass.language ?? "en";
 
@@ -337,14 +342,20 @@ export class DiraThermostatCard extends LitElement {
     const rgb = hexToRgb(color);
     const isOff = hvacMode === "off" || hvacMode === "unavailable";
     const hideTemp = isOff || hvacMode === "fan_only" || this._config.hide?.temperature === true;
-    const icon = this._config.icon ?? getModeIcon(hvacMode);
+    const icon =
+      this._config.icon ?? headerConfig.icon ?? getModeIcon(hvacMode);
 
-    // Secondary: mode + optional fan speed
+    // Secondary: mode + optional action + optional fan speed
     const modeText = localize(`mode.${hvacMode}`, lang);
-    const fanMode = stateObj.attributes.fan_mode as string | undefined;
+    const hvacAction = stateObj.attributes.hvac_action as string | undefined;
+    const actionText = hvacAction ? localize(`action.${hvacAction}`, lang) : "";
     let secondary = modeText;
+    if (this._config.show_action && actionText && hvacAction !== "off") {
+      secondary = `${modeText} \u00b7 ${actionText}`;
+    }
+    const fanMode = stateObj.attributes.fan_mode as string | undefined;
     if (this._config.show_fan_speed && fanMode && !isOff) {
-      secondary = `${modeText} \u00b7 ${fanMode}`;
+      secondary = `${secondary} \u00b7 ${fanMode}`;
     }
 
     // Stats: current temp + humidity
@@ -369,8 +380,12 @@ export class DiraThermostatCard extends LitElement {
     const maxTemp = stateObj.attributes.max_temp ?? 35;
     const callbacks = this._getTemperatureCallbacks();
 
-    const iconBg = isOff ? "" : `background-color: rgba(${rgb}, 0.2)`;
+    const showIcon = icon !== false && headerConfig.icon !== false;
+    const iconBg = isOff || !showIcon ? "" : `background-color: rgba(${rgb}, 0.2)`;
     const iconColor = isOff ? "" : `color: ${color}`;
+
+    // Right side: temp controls when active, toggle+faults when temp hidden
+    const showTempControls = !hideTemp && targetValue !== undefined;
 
     return html`
       <div class="compact">
@@ -380,11 +395,17 @@ export class DiraThermostatCard extends LitElement {
           @pointerup=${this._onPointerUp}
           @pointercancel=${this._onPointerCancel}
         >
-          <div class="icon-shape" style="${iconBg}">
-            <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
-          </div>
+          ${showIcon
+            ? html`
+                <div class="icon-shape" style="${iconBg}">
+                  <ha-icon .icon=${icon as string} style="${iconColor}"></ha-icon>
+                </div>
+              `
+            : nothing}
           <div class="info">
-            <div class="name">${name}</div>
+            ${headerConfig.name !== false
+              ? html`<div class="name">${name}</div>`
+              : nothing}
             <div class="secondary">
               ${secondary}
               ${statsItems.length > 0
@@ -393,7 +414,7 @@ export class DiraThermostatCard extends LitElement {
             </div>
           </div>
         </div>
-        ${!hideTemp && targetValue !== undefined
+        ${showTempControls
           ? html`
               <div class="compact-controls">
                 <button
@@ -422,9 +443,72 @@ export class DiraThermostatCard extends LitElement {
                 </button>
               </div>
             `
-          : nothing}
+          : html`
+              <div class="header-actions">
+                ${this._renderFaults(headerConfig)}
+                ${this._renderToggle(headerConfig)}
+              </div>
+            `}
       </div>
     `;
+  }
+
+  // ---- Toggle + Faults ----
+
+  private _renderToggle(headerConfig: HeaderConfig) {
+    const toggle = headerConfig.toggle;
+    if (!toggle?.entity) return nothing;
+
+    const entity = this._hass.states[toggle.entity];
+    if (!entity) return nothing;
+
+    const isOn = entity.state === "on";
+
+    return html`
+      <ha-switch
+        .checked=${isOn}
+        @change=${(e: Event) => {
+          e.stopPropagation();
+          this._hass.callService(
+            "homeassistant",
+            isOn ? "turn_off" : "turn_on",
+            { entity_id: toggle.entity }
+          );
+        }}
+      ></ha-switch>
+    `;
+  }
+
+  private _renderFaults(headerConfig: HeaderConfig) {
+    const faults = headerConfig.faults;
+    if (!faults || faults.length === 0) return nothing;
+
+    const items = faults
+      .map((fault) => {
+        const entity = this._hass.states[fault.entity];
+        if (!entity) return nothing;
+
+        const isActive = entity.state === "on";
+        if (!isActive && fault.hide_inactive) return nothing;
+
+        const icon =
+          fault.icon ?? entity.attributes.icon ?? "mdi:alert-circle";
+
+        return html`
+          <ha-icon
+            class="fault-icon ${isActive ? "active" : "inactive"}"
+            .icon=${icon}
+            @click=${(e: Event) => {
+              e.stopPropagation();
+              openMoreInfo(this, fault.entity);
+            }}
+          ></ha-icon>
+        `;
+      })
+      .filter((item) => item !== nothing);
+
+    if (items.length === 0) return nothing;
+    return html`${items}`;
   }
 
   updated(changedProps: PropertyValues): void {
