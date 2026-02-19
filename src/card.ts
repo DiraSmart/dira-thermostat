@@ -14,8 +14,7 @@ import { getModeIcon } from "./utils/icons";
 import { isDualSetpoint, formatTemperature, getUnit, getEntityName } from "./utils/entity";
 import { debounce } from "./utils/debounce";
 import { fireEvent, forwardHaptic, openMoreInfo } from "./utils/fire-event";
-import { renderHeader, HeaderTempControls } from "./components/header";
-import { renderTemperature, TemperatureCallbacks } from "./components/temperature";
+import { TemperatureCallbacks } from "./components/temperature";
 import { renderAllControls } from "./components/mode-buttons";
 import { renderSensors } from "./components/sensors";
 
@@ -235,42 +234,6 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Helpers ----
 
-  private _getHeaderTempControls(stateObj: HassEntity): HeaderTempControls | undefined {
-    if (this._config.hide?.temperature === true) return undefined;
-    const state = stateObj.state;
-    if (state === "off" || state === "unavailable" || state === "fan_only") {
-      return undefined;
-    }
-    // Only for single setpoint (dual uses its own section)
-    if (isDualSetpoint(stateObj)) return undefined;
-
-    const targetValue =
-      this._pendingValues["temperature"] ?? stateObj.attributes.temperature;
-    if (targetValue === undefined) return undefined;
-
-    const callbacks = this._getTemperatureCallbacks();
-    return {
-      targetValue,
-      isUpdating: this._pendingValues["temperature"] !== undefined,
-      minTemp: stateObj.attributes.min_temp ?? 7,
-      maxTemp: stateObj.attributes.max_temp ?? 35,
-      decimals: this._config.decimals ?? 1,
-      unit: getUnit(stateObj, this._config.unit),
-      onIncrement: () => callbacks.onIncrement("temperature"),
-      onDecrement: () => callbacks.onDecrement("temperature"),
-    };
-  }
-
-  private _shouldShowTemperature(stateObj: HassEntity): boolean {
-    if (this._config.hide?.temperature === true) return false;
-    const state = stateObj.state;
-    // Hide temperature when off or fan_only (no temp target makes sense)
-    if (state === "off" || state === "unavailable" || state === "fan_only") {
-      return false;
-    }
-    return true;
-  }
-
   // ---- Render ----
 
   render() {
@@ -313,23 +276,12 @@ export class DiraThermostatCard extends LitElement {
       `;
     }
 
-    // Full card
+    // Full card: same header row as compact + always-visible controls
     const effectiveControl = this._getEffectiveControl(stateObj);
-    const headerTemp = this._getHeaderTempControls(stateObj);
 
     return html`
       <ha-card>
-        ${renderHeader(this, this._hass, stateObj, this._config, headerTemp)}
-        ${this._shouldShowTemperature(stateObj) && isDualSetpoint(stateObj)
-          ? renderTemperature(
-              this,
-              this._hass,
-              stateObj,
-              this._config,
-              this._pendingValues,
-              this._getTemperatureCallbacks()
-            )
-          : nothing}
+        ${this._config.header !== false ? this._renderCompact(stateObj) : nothing}
         ${renderAllControls(
           this._hass,
           stateObj,
@@ -344,7 +296,7 @@ export class DiraThermostatCard extends LitElement {
     `;
   }
 
-  // ---- Compact Render (for popup mode) ----
+  // ---- Header Row Render (shared by compact and full mode) ----
 
   private _renderCompact(stateObj: HassEntity) {
     const name = getEntityName(stateObj, this._config.name);
@@ -355,7 +307,7 @@ export class DiraThermostatCard extends LitElement {
     const color = getModeColor(hvacMode, this._config.colors);
     const rgb = hexToRgb(color);
     const isOff = hvacMode === "off" || hvacMode === "unavailable";
-    const hideTemp = isOff || hvacMode === "fan_only";
+    const hideTemp = isOff || hvacMode === "fan_only" || this._config.hide?.temperature === true;
     const icon = this._config.icon ?? getModeIcon(hvacMode);
 
     // Secondary: mode + optional fan speed
@@ -395,7 +347,11 @@ export class DiraThermostatCard extends LitElement {
       <div class="compact">
         <div
           class="compact-left"
-          @click=${() => this._expand()}
+          @click=${() =>
+            this._config.popup
+              ? this._expand()
+              : openMoreInfo(this, this._config.entity)
+          }
         >
           <div class="icon-shape" style="${iconBg}">
             <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
