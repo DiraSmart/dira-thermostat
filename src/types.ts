@@ -62,6 +62,8 @@ export interface FaultConfig {
 export interface ToggleConfig {
   entity: string;
   name?: string | boolean;
+  icon_on?: string;
+  icon_off?: string;
 }
 
 export interface HeaderConfig {

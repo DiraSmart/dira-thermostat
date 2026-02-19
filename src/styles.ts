@@ -41,6 +41,38 @@ export const cardStyles = css`
     background-color: rgba(var(--dira-rgb-text), 0.05);
   }
 
+  .icon-wrapper {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .toggle-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--card-background-color, #1c1c1c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle-badge ha-icon {
+    --mdc-icon-size: 14px;
+  }
+
+  .toggle-badge.on {
+    color: var(--primary-color, #03a9f4);
+  }
+
+  .toggle-badge.off {
+    color: rgba(var(--dira-rgb-text), 0.3);
+  }
+
   .icon-shape ha-icon,
   .icon-shape ha-state-icon {
     --mdc-icon-size: 24px;

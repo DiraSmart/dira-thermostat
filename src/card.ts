@@ -397,8 +397,11 @@ export class DiraThermostatCard extends LitElement {
         >
           ${showIcon
             ? html`
-                <div class="icon-shape" style="${iconBg}">
-                  <ha-icon .icon=${icon as string} style="${iconColor}"></ha-icon>
+                <div class="icon-wrapper">
+                  <div class="icon-shape" style="${iconBg}">
+                    <ha-icon .icon=${icon as string} style="${iconColor}"></ha-icon>
+                  </div>
+                  ${this._renderToggleBadge(headerConfig)}
                 </div>
               `
             : nothing}
@@ -416,7 +419,6 @@ export class DiraThermostatCard extends LitElement {
         </div>
         <div class="compact-right">
           ${this._renderFaults(headerConfig)}
-          ${this._renderToggle(headerConfig)}
           ${showTempControls
             ? html`
                 <div class="compact-controls">
@@ -454,7 +456,7 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Toggle + Faults ----
 
-  private _renderToggle(headerConfig: HeaderConfig) {
+  private _renderToggleBadge(headerConfig: HeaderConfig) {
     const toggle = headerConfig.toggle;
     if (!toggle?.entity) return nothing;
 
@@ -462,11 +464,14 @@ export class DiraThermostatCard extends LitElement {
     if (!entity) return nothing;
 
     const isOn = entity.state === "on";
+    const badgeIcon = isOn
+      ? (toggle.icon_on ?? "mdi:circle")
+      : (toggle.icon_off ?? "mdi:circle-outline");
 
     return html`
-      <ha-switch
-        .checked=${isOn}
-        @change=${(e: Event) => {
+      <div
+        class="toggle-badge ${isOn ? "on" : "off"}"
+        @click=${(e: Event) => {
           e.stopPropagation();
           this._hass.callService(
             "homeassistant",
@@ -474,7 +479,9 @@ export class DiraThermostatCard extends LitElement {
             { entity_id: toggle.entity }
           );
         }}
-      ></ha-switch>
+      >
+        <ha-icon .icon=${badgeIcon}></ha-icon>
+      </div>
     `;
   }
 
