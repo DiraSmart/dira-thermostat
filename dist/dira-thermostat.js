@@ -333,6 +333,13 @@
     cursor: pointer;
   }
 
+  .compact-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
   .compact-controls {
     display: flex;
     align-items: center;
@@ -475,33 +482,32 @@
             </div>
           </div>
         </div>
-        ${O?V`
-              <div class="compact-controls">
-                <button
-                  class="temp-button"
-                  @click=${t=>{t.stopPropagation(),A.onDecrement("temperature")}}
-                  ?disabled=${y<=x}
-                >
-                  <ha-icon .icon=${"mdi:minus"}></ha-icon>
-                </button>
-                <div class="compact-temp ${b?"updating":""}">
-                  ${Ct(y,$)}
-                  <span class="unit">${_}</span>
+        <div class="compact-right">
+          ${this._renderFaults(e)}
+          ${this._renderToggle(e)}
+          ${O?V`
+                <div class="compact-controls">
+                  <button
+                    class="temp-button"
+                    @click=${t=>{t.stopPropagation(),A.onDecrement("temperature")}}
+                    ?disabled=${y<=x}
+                  >
+                    <ha-icon .icon=${"mdi:minus"}></ha-icon>
+                  </button>
+                  <div class="compact-temp ${b?"updating":""}">
+                    ${Ct(y,$)}
+                    <span class="unit">${_}</span>
+                  </div>
+                  <button
+                    class="temp-button"
+                    @click=${t=>{t.stopPropagation(),A.onIncrement("temperature")}}
+                    ?disabled=${y>=w}
+                  >
+                    <ha-icon .icon=${"mdi:plus"}></ha-icon>
+                  </button>
                 </div>
-                <button
-                  class="temp-button"
-                  @click=${t=>{t.stopPropagation(),A.onIncrement("temperature")}}
-                  ?disabled=${y>=w}
-                >
-                  <ha-icon .icon=${"mdi:plus"}></ha-icon>
-                </button>
-              </div>
-            `:V`
-              <div class="header-actions">
-                ${this._renderFaults(e)}
-                ${this._renderToggle(e)}
-              </div>
-            `}
+              `:W}
+        </div>
       </div>
     `}_renderToggle(t){const e=t.toggle;if(!e?.entity)return W;const i=this._hass.states[e.entity];if(!i)return W;const s="on"===i.state;return V`
       <ha-switch

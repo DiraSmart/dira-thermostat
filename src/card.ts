@@ -414,41 +414,40 @@ export class DiraThermostatCard extends LitElement {
             </div>
           </div>
         </div>
-        ${showTempControls
-          ? html`
-              <div class="compact-controls">
-                <button
-                  class="temp-button"
-                  @click=${(e: Event) => {
-                    e.stopPropagation();
-                    callbacks.onDecrement("temperature");
-                  }}
-                  ?disabled=${targetValue <= minTemp}
-                >
-                  <ha-icon .icon=${"mdi:minus"}></ha-icon>
-                </button>
-                <div class="compact-temp ${isUpdating ? "updating" : ""}">
-                  ${formatTemperature(targetValue, decimals)}
-                  <span class="unit">${unit}</span>
+        <div class="compact-right">
+          ${this._renderFaults(headerConfig)}
+          ${this._renderToggle(headerConfig)}
+          ${showTempControls
+            ? html`
+                <div class="compact-controls">
+                  <button
+                    class="temp-button"
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      callbacks.onDecrement("temperature");
+                    }}
+                    ?disabled=${targetValue <= minTemp}
+                  >
+                    <ha-icon .icon=${"mdi:minus"}></ha-icon>
+                  </button>
+                  <div class="compact-temp ${isUpdating ? "updating" : ""}">
+                    ${formatTemperature(targetValue, decimals)}
+                    <span class="unit">${unit}</span>
+                  </div>
+                  <button
+                    class="temp-button"
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      callbacks.onIncrement("temperature");
+                    }}
+                    ?disabled=${targetValue >= maxTemp}
+                  >
+                    <ha-icon .icon=${"mdi:plus"}></ha-icon>
+                  </button>
                 </div>
-                <button
-                  class="temp-button"
-                  @click=${(e: Event) => {
-                    e.stopPropagation();
-                    callbacks.onIncrement("temperature");
-                  }}
-                  ?disabled=${targetValue >= maxTemp}
-                >
-                  <ha-icon .icon=${"mdi:plus"}></ha-icon>
-                </button>
-              </div>
-            `
-          : html`
-              <div class="header-actions">
-                ${this._renderFaults(headerConfig)}
-                ${this._renderToggle(headerConfig)}
-              </div>
-            `}
+              `
+            : nothing}
+        </div>
       </div>
     `;
   }

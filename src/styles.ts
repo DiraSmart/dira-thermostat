@@ -335,6 +335,13 @@ export const cardStyles = css`
     cursor: pointer;
   }
 
+  .compact-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
   .compact-controls {
     display: flex;
     align-items: center;
