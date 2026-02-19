@@ -5,9 +5,9 @@ import {
   DiraCardConfig,
   HeaderConfig,
 } from "../types";
-import { getModeColor, getActionColor, hexToRgb } from "../utils/colors";
-import { getModeIcon, getActionIcon } from "../utils/icons";
-import { getEntityName } from "../utils/entity";
+import { getModeColor, hexToRgb } from "../utils/colors";
+import { getModeIcon, getFanIcon } from "../utils/icons";
+import { getEntityName, formatTemperature } from "../utils/entity";
 import { localize } from "../localize";
 import { openMoreInfo } from "../utils/fire-event";
 
@@ -26,37 +26,50 @@ export function renderHeader(
 
   const lang = hass.language ?? "en";
   const name = getEntityName(stateObj, config.name);
-  const hvacAction = stateObj.attributes.hvac_action as string | undefined;
   const hvacMode = stateObj.state;
 
-  // Determine color
-  const color = hvacAction
-    ? getActionColor(hvacAction)
-    : getModeColor(hvacMode, config.colors);
+  // Color and icon always based on HVAC mode (not action)
+  const color = getModeColor(hvacMode, config.colors);
   const rgb = hexToRgb(color);
   const isOff = hvacMode === "off" || hvacMode === "unavailable";
 
-  // Determine icon
   const icon =
-    config.icon ??
-    headerConfig.icon ??
-    (hvacAction ? getActionIcon(hvacAction) : getModeIcon(hvacMode));
+    config.icon ?? headerConfig.icon ?? getModeIcon(hvacMode);
 
-  // Secondary text: action + current temp
-  const actionText = hvacAction
-    ? localize(`action.${hvacAction}`, lang)
-    : localize(`mode.${hvacMode}`, lang);
+  // Secondary text: mode name (action is optional via show_action)
+  const modeText = localize(`mode.${hvacMode}`, lang);
+  const hvacAction = stateObj.attributes.hvac_action as string | undefined;
+  const actionText = hvacAction ? localize(`action.${hvacAction}`, lang) : "";
+
+  let secondary = modeText;
+  if (config.show_action && actionText && hvacAction !== "off") {
+    secondary = `${modeText} \u00b7 ${actionText}`;
+  }
+
+  // Fan speed inline if show_fan_speed and entity is on
+  const fanMode = stateObj.attributes.fan_mode as string | undefined;
+  if (config.show_fan_speed && fanMode && !isOff) {
+    secondary = `${secondary} \u00b7 ${fanMode}`;
+  }
+
+  // Current temp + humidity below name
   const currentTemp = stateObj.attributes.current_temperature;
+  const humidity = stateObj.attributes.current_humidity;
   const unit = stateObj.attributes.unit_of_measurement ?? "°C";
-  const secondary =
-    currentTemp !== undefined && currentTemp !== null
-      ? `${actionText} \u00b7 ${Number(currentTemp).toFixed(config.decimals ?? 1)} ${unit}`
-      : actionText;
 
-  const iconBg =
-    isOff || icon === false
-      ? ""
-      : `background-color: rgba(${rgb}, 0.2)`;
+  const statsItems: string[] = [];
+  if (currentTemp !== undefined && currentTemp !== null) {
+    statsItems.push(
+      `${formatTemperature(currentTemp, config.decimals ?? 1)} ${unit}`
+    );
+  }
+  if (humidity !== undefined && humidity !== null) {
+    statsItems.push(`${Math.round(humidity)}%`);
+  }
+
+  const iconBg = isOff || icon === false
+    ? ""
+    : `background-color: rgba(${rgb}, 0.2)`;
   const iconColor = isOff ? "" : `color: ${color}`;
 
   return html`
@@ -83,7 +96,12 @@ export function renderHeader(
         ${headerConfig.name !== false
           ? html`<div class="name">${name}</div>`
           : nothing}
-        <div class="secondary">${secondary}</div>
+        <div class="secondary">
+          ${secondary}
+          ${statsItems.length > 0
+            ? html` <span class="stats">\u00b7 ${statsItems.join(" \u00b7 ")}</span>`
+            : nothing}
+        </div>
       </div>
       <div class="header-actions">
         ${renderFaults(host, hass, headerConfig.faults)}

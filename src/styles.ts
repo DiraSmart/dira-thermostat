@@ -213,8 +213,16 @@ export const cardStyles = css`
 
   .mode-buttons {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 2px;
+  }
+
+  .mode-buttons::-webkit-scrollbar {
+    display: none;
   }
 
   .mode-btn {
@@ -222,6 +230,7 @@ export const cardStyles = css`
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
+    flex-shrink: 0;
     border-radius: var(--dira-radius-button);
     border: none;
     background: rgba(var(--dira-rgb-text), 0.05);
@@ -308,33 +317,56 @@ export const cardStyles = css`
     display: flex;
     align-items: center;
     gap: var(--dira-spacing);
-    cursor: pointer;
     padding: 0;
   }
 
-  .compact .temperatures {
-    margin-left: auto;
-    text-align: right;
+  .compact-left {
+    display: flex;
+    align-items: center;
+    gap: var(--dira-spacing);
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+
+  .compact-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex-shrink: 0;
   }
 
-  .compact .temperatures .target-temp {
-    font-size: 20px;
+  .compact-controls .temp-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .compact-controls .temp-button ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
+  .compact-temp {
+    font-size: 18px;
     font-weight: 600;
     color: var(--primary-text-color);
+    min-width: 50px;
+    text-align: center;
+    user-select: none;
     line-height: 1;
   }
 
-  .compact .temperatures .target-temp .unit {
-    font-size: 12px;
+  .compact-temp .unit {
+    font-size: 11px;
     font-weight: 400;
     color: var(--secondary-text-color);
   }
 
-  .compact .temperatures .current-temp {
-    font-size: 11px;
-    color: var(--secondary-text-color);
-    margin-top: 2px;
+  .compact-temp.updating {
+    color: var(--error-color, #db4437);
+  }
+
+  .info .secondary .stats {
+    opacity: 0.8;
   }
 
   /* ---- Popup ---- */

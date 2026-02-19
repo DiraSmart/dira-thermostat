@@ -9,8 +9,8 @@ import {
 } from "./types";
 import { cardStyles } from "./styles";
 import { localize } from "./localize";
-import { getModeColor, getActionColor, hexToRgb } from "./utils/colors";
-import { getModeIcon, getActionIcon } from "./utils/icons";
+import { getModeColor, hexToRgb } from "./utils/colors";
+import { getModeIcon } from "./utils/icons";
 import { isDualSetpoint, formatTemperature, getUnit, getEntityName } from "./utils/entity";
 import { debounce } from "./utils/debounce";
 import { fireEvent, forwardHaptic, openMoreInfo } from "./utils/fire-event";
@@ -241,57 +241,97 @@ export class DiraThermostatCard extends LitElement {
 
   private _renderCompact(stateObj: HassEntity) {
     const name = getEntityName(stateObj, this._config.name);
-    const hvacAction = stateObj.attributes.hvac_action as string | undefined;
     const hvacMode = stateObj.state;
     const lang = this._hass.language ?? "en";
 
-    const color = hvacAction
-      ? getActionColor(hvacAction)
-      : getModeColor(hvacMode, this._config.colors);
+    // Color and icon always by HVAC mode
+    const color = getModeColor(hvacMode, this._config.colors);
     const rgb = hexToRgb(color);
     const isOff = hvacMode === "off" || hvacMode === "unavailable";
+    const icon = this._config.icon ?? getModeIcon(hvacMode);
 
-    const icon =
-      this._config.icon ??
-      (hvacAction ? getActionIcon(hvacAction) : getModeIcon(hvacMode));
+    // Secondary: mode + optional fan speed
+    const modeText = localize(`mode.${hvacMode}`, lang);
+    const fanMode = stateObj.attributes.fan_mode as string | undefined;
+    let secondary = modeText;
+    if (this._config.show_fan_speed && fanMode && !isOff) {
+      secondary = `${modeText} \u00b7 ${fanMode}`;
+    }
 
-    const actionText = hvacAction
-      ? localize(`action.${hvacAction}`, lang)
-      : localize(`mode.${hvacMode}`, lang);
-
-    const targetTemp = isDualSetpoint(stateObj)
-      ? `${formatTemperature(stateObj.attributes.target_temp_low, this._config.decimals ?? 1)}-${formatTemperature(stateObj.attributes.target_temp_high, this._config.decimals ?? 1)}`
-      : formatTemperature(
-          stateObj.attributes.temperature,
-          this._config.decimals ?? 1,
-          this._config.fallback
-        );
-
-    const unit = getUnit(stateObj, this._config.unit);
+    // Stats: current temp + humidity
     const currentTemp = stateObj.attributes.current_temperature;
+    const humidity = stateObj.attributes.current_humidity;
+    const unit = getUnit(stateObj, this._config.unit);
+    const decimals = this._config.decimals ?? 1;
+
+    const statsItems: string[] = [];
+    if (currentTemp !== undefined && currentTemp !== null) {
+      statsItems.push(`${formatTemperature(currentTemp, decimals)} ${unit}`);
+    }
+    if (humidity !== undefined && humidity !== null) {
+      statsItems.push(`${Math.round(humidity)}%`);
+    }
+
+    // Target temp for +/- controls
+    const targetValue =
+      this._pendingValues["temperature"] ?? stateObj.attributes.temperature;
+    const isUpdating = this._pendingValues["temperature"] !== undefined;
+    const minTemp = stateObj.attributes.min_temp ?? 7;
+    const maxTemp = stateObj.attributes.max_temp ?? 35;
+    const callbacks = this._getTemperatureCallbacks();
 
     const iconBg = isOff ? "" : `background-color: rgba(${rgb}, 0.2)`;
     const iconColor = isOff ? "" : `color: ${color}`;
 
     return html`
-      <div class="compact" @click=${() => (this._showPopup = true)}>
-        <div class="icon-shape" style="${iconBg}">
-          <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
-        </div>
-        <div class="info">
-          <div class="name">${name}</div>
-          <div class="secondary">${actionText}</div>
-        </div>
-        <div class="temperatures">
-          <div class="target-temp">
-            ${targetTemp}<span class="unit">${unit}</span>
+      <div class="compact">
+        <div
+          class="compact-left"
+          @click=${() => (this._showPopup = true)}
+        >
+          <div class="icon-shape" style="${iconBg}">
+            <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
           </div>
-          ${currentTemp !== undefined && currentTemp !== null
-            ? html`<div class="current-temp">
-                ${formatTemperature(currentTemp, this._config.decimals ?? 1)} ${unit}
-              </div>`
-            : nothing}
+          <div class="info">
+            <div class="name">${name}</div>
+            <div class="secondary">
+              ${secondary}
+              ${statsItems.length > 0
+                ? html` <span class="stats">\u00b7 ${statsItems.join(" \u00b7 ")}</span>`
+                : nothing}
+            </div>
+          </div>
         </div>
+        ${!isOff && targetValue !== undefined
+          ? html`
+              <div class="compact-controls">
+                <button
+                  class="temp-button"
+                  @click=${(e: Event) => {
+                    e.stopPropagation();
+                    callbacks.onDecrement("temperature");
+                  }}
+                  ?disabled=${targetValue <= minTemp}
+                >
+                  <ha-icon .icon=${"mdi:minus"}></ha-icon>
+                </button>
+                <div class="compact-temp ${isUpdating ? "updating" : ""}">
+                  ${formatTemperature(targetValue, decimals)}
+                  <span class="unit">${unit}</span>
+                </div>
+                <button
+                  class="temp-button"
+                  @click=${(e: Event) => {
+                    e.stopPropagation();
+                    callbacks.onIncrement("temperature");
+                  }}
+                  ?disabled=${targetValue >= maxTemp}
+                >
+                  <ha-icon .icon=${"mdi:plus"}></ha-icon>
+                </button>
+              </div>
+            `
+          : nothing}
       </div>
     `;
   }

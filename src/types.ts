@@ -137,6 +137,8 @@ export interface DiraCardConfig {
     temperature?: boolean;
     state?: boolean;
   };
+  show_action?: boolean;
+  show_fan_speed?: boolean;
   layout?: LayoutConfig;
   service?: ServiceConfig;
   label?: {
