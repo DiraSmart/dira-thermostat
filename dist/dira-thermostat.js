@@ -231,12 +231,12 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 7px 8px;
+    padding: 10px 8px;
     border-radius: calc(var(--dira-radius-button) - 2px);
     border: none;
     background: transparent;
     color: var(--secondary-text-color);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
@@ -257,7 +257,7 @@
   }
 
   .segment ha-icon {
-    --mdc-icon-size: 16px;
+    --mdc-icon-size: 18px;
     flex-shrink: 0;
   }
 
