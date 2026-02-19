@@ -29,6 +29,8 @@ export class DiraThermostatCard extends LitElement {
   @state() private _pendingValues: Record<string, number> = {};
 
   private _collapseTimer?: ReturnType<typeof setTimeout>;
+  private _longPressTimer?: ReturnType<typeof setTimeout>;
+  private _longPressFired = false;
 
   private _debouncedCallService = debounce((data: Record<string, any>) => {
     const serviceConfig = this._config.service;
@@ -180,6 +182,30 @@ export class DiraThermostatCard extends LitElement {
     this._resetCollapseTimer();
   }
 
+  // ---- Long Press ----
+
+  private _onPointerDown = (): void => {
+    this._longPressFired = false;
+    this._longPressTimer = setTimeout(() => {
+      this._longPressFired = true;
+      openMoreInfo(this, this._config.entity);
+      forwardHaptic(this, "light");
+    }, 500);
+  };
+
+  private _onPointerUp = (): void => {
+    clearTimeout(this._longPressTimer);
+    if (this._longPressFired) return;
+    // Short click
+    if (this._config.popup) {
+      this._expanded ? this._collapse() : this._expand();
+    }
+  };
+
+  private _onPointerCancel = (): void => {
+    clearTimeout(this._longPressTimer);
+  };
+
   // ---- Expand / Collapse (for compact mode) ----
 
   private _expand(): void {
@@ -209,6 +235,7 @@ export class DiraThermostatCard extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._clearCollapseTimer();
+    clearTimeout(this._longPressTimer);
   }
 
   // ---- Mode Select Handler ----
@@ -347,13 +374,9 @@ export class DiraThermostatCard extends LitElement {
       <div class="compact">
         <div
           class="compact-left"
-          @click=${() =>
-            this._config.popup
-              ? this._expanded
-                ? this._collapse()
-                : this._expand()
-              : openMoreInfo(this, this._config.entity)
-          }
+          @pointerdown=${this._onPointerDown}
+          @pointerup=${this._onPointerUp}
+          @pointercancel=${this._onPointerCancel}
         >
           <div class="icon-shape" style="${iconBg}">
             <ha-icon .icon=${icon} style="${iconColor}"></ha-icon>
