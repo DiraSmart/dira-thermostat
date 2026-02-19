@@ -458,7 +458,7 @@
       <div class="compact">
         <div
           class="compact-left"
-          @click=${()=>this._config.popup?this._expand():Ot(this,this._config.entity)}
+          @click=${()=>this._config.popup?this._expanded?this._collapse():this._expand():Ot(this,this._config.entity)}
         >
           <div class="icon-shape" style="${r?"":`background-color: rgba(${n}, 0.2)`}">
             <ha-icon .icon=${c} style="${r?"":`color: ${s}`}"></ha-icon>

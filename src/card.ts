@@ -349,7 +349,9 @@ export class DiraThermostatCard extends LitElement {
           class="compact-left"
           @click=${() =>
             this._config.popup
-              ? this._expand()
+              ? this._expanded
+                ? this._collapse()
+                : this._expand()
               : openMoreInfo(this, this._config.entity)
           }
         >
