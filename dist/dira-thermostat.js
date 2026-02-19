@@ -528,7 +528,6 @@
           ${this._renderCompact(t)}
           ${this._expanded?F`
                 <div class="expand-section">
-                  ${this._shouldShowTemperature(t)?Mt(this,this._hass,t,this._config,this._pendingValues,this._getTemperatureCallbacks()):Y}
                   ${Ht(this._hass,t,this._config,e,(t,e)=>this._onModeSelect(t,e))}
                   ${!0!==this._config.hide?.state?Dt(this,this._hass,t,this._config):Y}
                 </div>

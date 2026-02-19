@@ -270,16 +270,6 @@ export class DiraThermostatCard extends LitElement {
           ${this._expanded
             ? html`
                 <div class="expand-section">
-                  ${this._shouldShowTemperature(stateObj)
-                    ? renderTemperature(
-                        this,
-                        this._hass,
-                        stateObj,
-                        this._config,
-                        this._pendingValues,
-                        this._getTemperatureCallbacks()
-                      )
-                    : nothing}
                   ${renderAllControls(
                     this._hass,
                     stateObj,
