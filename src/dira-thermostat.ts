@@ -18,7 +18,7 @@ customElements.define("dira-thermostat-editor", DiraThermostatEditor);
   description:
     "A modern thermostat card with Mushroom-style design and full climate control",
   preview: true,
-  documentationURL: "https://github.com/jbran/dira-thermostat",
+  documentationURL: "https://github.com/DiraSmart/dira-thermostat",
 });
 
 console.info(

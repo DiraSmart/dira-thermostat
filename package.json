@@ -2,7 +2,7 @@
   "name": "dira-thermostat",
   "version": "1.0.0",
   "description": "A modern thermostat card for Home Assistant with Mushroom-style design and full climate control",
-  "author": "jbran",
+  "author": "DiraSmart",
   "license": "MIT",
   "main": "dist/dira-thermostat.js",
   "scripts": {
