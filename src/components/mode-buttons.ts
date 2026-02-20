@@ -224,7 +224,7 @@ function renderModeSection(
           const isActive = opt.value === activeMode;
           const rgb = hexToRgb(opt.color);
           const style = isActive
-            ? `background-color: rgba(${rgb}, 0.2); color: ${opt.color};`
+            ? `background-color: ${opt.color}; color: var(--text-primary-color, #fff);`
             : "";
 
           return html`

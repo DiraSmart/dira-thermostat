@@ -451,10 +451,10 @@
     <div class="mode-section">
       ${c?V`<div class="mode-heading">${p}</div>`:W}
       <div class="segmented-control">
-        ${g.map(t=>{const e=t.value===h,i=vt(t.color),o=e?`background-color: rgba(${i}, 0.2); color: ${t.color};`:"";return V`
+        ${g.map(t=>{const e=t.value===h;vt(t.color);const i=e?`background-color: ${t.color}; color: var(--text-primary-color, #fff);`:"";return V`
             <button
               class="segment ${e?"active":""}"
-              style="${o}"
+              style="${i}"
               @click=${()=>d(t.value)}
               title=${t.name}
             >
