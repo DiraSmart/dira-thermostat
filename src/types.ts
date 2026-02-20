@@ -82,8 +82,6 @@ export interface ModeOptionConfig {
 export interface ModeControlConfig {
   _name?: string;
   _hide_when_off?: boolean;
-  _names?: boolean;
-  _icons?: boolean;
   [mode: string]: string | boolean | ModeOptionConfig | undefined;
 }
 
@@ -105,13 +103,19 @@ export interface SetpointsConfig {
   [key: string]: SetpointItemConfig | undefined;
 }
 
+export interface ModeLayoutConfig {
+  names?: boolean;
+  icons?: boolean;
+  headings?: boolean;
+}
+
 export interface LayoutConfig {
   step?: "row" | "column";
-  mode?: {
-    names?: boolean;
-    icons?: boolean;
-    headings?: boolean;
-  };
+  mode?: ModeLayoutConfig;
+  hvac?: ModeLayoutConfig;
+  fan?: ModeLayoutConfig;
+  preset?: ModeLayoutConfig;
+  swing?: ModeLayoutConfig;
   sensors?: {
     type?: "table" | "list";
     labels?: boolean;

@@ -85,10 +85,7 @@ export function renderAllControls(
   if (effectiveControl === false) return nothing;
 
   const lang = hass.language ?? "en";
-  const layout = config.layout?.mode ?? {};
-  const showNames = layout.names !== false;
-  const showIcons = layout.icons !== false;
-  const showHeadings = layout.headings === true;
+  const globalMode = config.layout?.mode ?? {};
 
   const sections: TemplateResult[] = [];
 
@@ -98,15 +95,11 @@ export function renderAllControls(
 
     const modeType = MODE_TYPES[typeKey];
 
-    // Per-type overrides: _names and _icons in control config take priority
-    const sectionShowNames =
-      typeof typeConfig === "object" && typeConfig._names !== undefined
-        ? typeConfig._names
-        : showNames;
-    const sectionShowIcons =
-      typeof typeConfig === "object" && typeConfig._icons !== undefined
-        ? typeConfig._icons
-        : showIcons;
+    // Per-type layout overrides from layout.fan, layout.preset, etc.
+    const typeLayout = config.layout?.[typeKey];
+    const showNames = (typeLayout?.names ?? globalMode.names) !== false;
+    const showIcons = (typeLayout?.icons ?? globalMode.icons) !== false;
+    const showHeadings = (typeLayout?.headings ?? globalMode.headings) === true;
 
     const section = renderModeSection(
       hass,
@@ -115,8 +108,8 @@ export function renderAllControls(
       modeType,
       typeConfig,
       lang,
-      sectionShowNames,
-      sectionShowIcons,
+      showNames,
+      showIcons,
       showHeadings,
       (value: string) => onModeSelect(typeKey, value)
     );
