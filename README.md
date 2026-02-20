@@ -427,18 +427,30 @@ hide:
 
 ### Custom Colors
 
-Override the default mode colors.
+Override the default colors for HVAC modes and control type sections.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `colors` | object | — | Map of mode name to hex color |
+| `colors` | object | — | Map of mode/type name to color |
+| `colors.heat` | string | `#ff8100` | Heat mode color |
+| `colors.cool` | string | `#2b9af9` | Cool mode color |
+| `colors.auto` | string | `#4caf50` | Auto mode color |
+| `colors.dry` | string | `#efbd07` | Dry mode color |
+| `colors.fan` | string | `var(--primary-color)` | Fan mode section active color |
+| `colors.preset` | string | `#b39ddb` | Preset section active color |
+| `colors.swing` | string | `#ffb74d` | Swing section active color |
 
 ```yaml
 colors:
+  # HVAC modes
   heat: "#ff6b35"
   cool: "#00b4d8"
   auto: "#2ecc71"
   dry: "#f39c12"
+  # Control sections
+  fan: "#4dd0e1"
+  preset: "#e91e63"
+  swing: "#ff9800"
 ```
 
 ---
