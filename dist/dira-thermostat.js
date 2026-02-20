@@ -294,7 +294,7 @@
   }
 
   .segment ha-icon {
-    --mdc-icon-size: 18px;
+    --mdc-icon-size: 20px;
     flex-shrink: 0;
   }
 
