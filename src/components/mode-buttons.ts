@@ -85,7 +85,6 @@ export function renderAllControls(
   if (effectiveControl === false) return nothing;
 
   const lang = hass.language ?? "en";
-  const globalMode = config.layout?.mode ?? {};
 
   const sections: TemplateResult[] = [];
 
@@ -95,11 +94,14 @@ export function renderAllControls(
 
     const modeType = MODE_TYPES[typeKey];
 
-    // Per-type layout overrides from layout.fan, layout.preset, etc.
-    const typeLayout = config.layout?.[typeKey];
-    const showNames = (typeLayout?.names ?? globalMode.names) !== false;
-    const showIcons = (typeLayout?.icons ?? globalMode.icons) !== false;
-    const showHeadings = (typeLayout?.headings ?? globalMode.headings) === true;
+    // Each type reads its own layout section; layout.mode is an alias for hvac
+    const typeLayout =
+      typeKey === "hvac"
+        ? (config.layout?.hvac ?? config.layout?.mode)
+        : config.layout?.[typeKey];
+    const showNames = typeLayout?.names !== false;
+    const showIcons = typeLayout?.icons !== false;
+    const showHeadings = typeLayout?.headings === true;
 
     const section = renderModeSection(
       hass,
