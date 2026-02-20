@@ -397,7 +397,15 @@ export class DiraThermostatCard extends LitElement {
         >
           ${showIcon
             ? html`
-                <div class="icon-wrapper">
+                <div
+                  class="icon-wrapper ${headerConfig.toggle?.entity ? "toggleable" : ""}"
+                  @click=${headerConfig.toggle?.entity
+                    ? (e: Event) => {
+                        e.stopPropagation();
+                        this._handleToggle(headerConfig);
+                      }
+                    : nothing}
+                >
                   <div class="icon-shape" style="${iconBg}">
                     <ha-icon .icon=${icon as string} style="${iconColor}"></ha-icon>
                   </div>
@@ -456,6 +464,22 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Toggle + Faults ----
 
+  private _handleToggle(headerConfig: HeaderConfig): void {
+    const toggle = headerConfig.toggle;
+    if (!toggle?.entity) return;
+
+    const entity = this._hass.states[toggle.entity];
+    if (!entity) return;
+
+    const isOn = entity.state === "on";
+    this._hass.callService(
+      "homeassistant",
+      isOn ? "turn_off" : "turn_on",
+      { entity_id: toggle.entity }
+    );
+    forwardHaptic(this, "light");
+  }
+
   private _renderToggleBadge(headerConfig: HeaderConfig) {
     const toggle = headerConfig.toggle;
     if (!toggle?.entity) return nothing;
@@ -469,17 +493,7 @@ export class DiraThermostatCard extends LitElement {
       : (toggle.icon_off ?? "mdi:circle-outline");
 
     return html`
-      <div
-        class="toggle-badge ${isOn ? "on" : "off"}"
-        @click=${(e: Event) => {
-          e.stopPropagation();
-          this._hass.callService(
-            "homeassistant",
-            isOn ? "turn_off" : "turn_on",
-            { entity_id: toggle.entity }
-          );
-        }}
-      >
+      <div class="toggle-badge ${isOn ? "on" : "off"}">
         <ha-icon .icon=${badgeIcon}></ha-icon>
       </div>
     `;

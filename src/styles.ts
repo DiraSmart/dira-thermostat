@@ -46,6 +46,11 @@ export const cardStyles = css`
     flex-shrink: 0;
   }
 
+  .icon-wrapper.toggleable {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .toggle-badge {
     position: absolute;
     bottom: -2px;
@@ -57,8 +62,7 @@ export const cardStyles = css`
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    pointer-events: none;
   }
 
   .toggle-badge ha-icon {
