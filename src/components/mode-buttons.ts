@@ -228,7 +228,7 @@ function renderModeSection(
       ${showHeadings
         ? html`<div class="mode-heading">${heading}</div>`
         : nothing}
-      <div class="segmented-control">
+      <div class="segmented-control ${modeType.type !== "hvac" ? "secondary" : ""}">
         ${options.map((opt) => {
           const isActive = opt.value === activeMode;
           const rgb = hexToRgb(opt.color);

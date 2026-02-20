@@ -310,6 +310,18 @@ export const cardStyles = css`
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
+  /* Secondary controls (fan, preset, swing) — smaller than HVAC */
+  .segmented-control.secondary .segment {
+    padding: 7px 6px;
+    font-size: 12px;
+    min-height: 34px;
+    box-sizing: border-box;
+  }
+
+  .segmented-control.secondary .segment ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
   /* ---- Sensors ---- */
   .sensors {
     display: flex;
