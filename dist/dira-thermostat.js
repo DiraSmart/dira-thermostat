@@ -300,8 +300,6 @@
   .segment-label {
     overflow: hidden;
     text-overflow: ellipsis;
-    text-align: center;
-    flex: 1;
   }
 
   .segment.active {
