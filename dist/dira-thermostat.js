@@ -500,7 +500,7 @@
           ${this._expanded?V`
                 <div class="expand-section">
                   ${Pt(this._hass,t,this._config,e,(t,e)=>this._onModeSelect(t,e))}
-                  ${!0!==this._config.hide?.state?Nt(this,this._hass,t,this._config):W}
+                  ${Nt(this,this._hass,t,this._config)}
                 </div>
               `:W}
         </ha-card>
@@ -508,9 +508,9 @@
       <ha-card>
         ${!1!==this._config.header?this._renderCompact(t):W}
         ${Pt(this._hass,t,this._config,e,(t,e)=>this._onModeSelect(t,e))}
-        ${!0!==this._config.hide?.state?Nt(this,this._hass,t,this._config):W}
+        ${Nt(this,this._hass,t,this._config)}
       </ha-card>
-    `}_renderCompact(t){const e="object"==typeof this._config.header?this._config.header:{},i=function(t,e){return e||(t.attributes.friendly_name??t.entity_id)}(t,(!1!==e.name?e.name:void 0)??this._config.name),o=t.state,s=this._hass.language??"en",n=$t(o,this._config.colors),r=vt(n),a="off"===o||"unavailable"===o,c=a||"fan_only"===o||!0===this._config.hide?.temperature,d=this._config.icon??e.icon??At(o),l=ft(`mode.${o}`,s),h=t.attributes.hvac_action,p=h?ft(`action.${h}`,s):"";let u=l;this._config.show_action&&p&&"off"!==h&&(u=`${l} · ${p}`);const f=t.attributes.fan_mode;this._config.show_fan_speed&&f&&!a&&(u=`${u} · ${f}`);const g=t.attributes.current_temperature,m=t.attributes.current_humidity,_=function(t,e){return!1===e?"":"string"==typeof e?e:t.attributes.unit_of_measurement??"°C"}(t,this._config.unit),$=this._config.decimals??1,v=[];null!=g&&v.push(`${Ct(g,$)} ${_}`),null!=m&&v.push(`${Math.round(m)}%`);const y=this._pendingValues.temperature??t.attributes.temperature,b=void 0!==this._pendingValues.temperature,w=t.attributes.min_temp??7,x=t.attributes.max_temp??35,A=this._getTemperatureCallbacks(),C=!1!==d&&!1!==e.icon,E=a||!C?"":`background-color: rgba(${r}, 0.2)`,S=a?"":`color: ${n}`,T=!c&&void 0!==y;return V`
+    `}_renderCompact(t){const e="object"==typeof this._config.header?this._config.header:{},i=function(t,e){return e||(t.attributes.friendly_name??t.entity_id)}(t,(!1!==e.name?e.name:void 0)??this._config.name),o=t.state,s=this._hass.language??"en",n=$t(o,this._config.colors),r=vt(n),a="off"===o||"unavailable"===o,c=a||"fan_only"===o||!0===this._config.hide?.temperature,d=this._config.icon??e.icon??At(o),l=ft(`mode.${o}`,s),h=t.attributes.hvac_action,p=h?ft(`action.${h}`,s):"";let u=l;this._config.show_action&&p&&"off"!==h&&(u=`${l} · ${p}`);const f=t.attributes.fan_mode;this._config.show_fan_speed&&f&&!a&&(u=`${u} · ${f}`);const g=function(t,e){return!1===e?"":"string"==typeof e?e:t.attributes.unit_of_measurement??"°C"}(t,this._config.unit),m=this._config.decimals??1,_=[];if(!0!==this._config.hide?.state){const e=t.attributes.current_temperature,i=t.attributes.current_humidity;null!=e&&_.push(`${Ct(e,m)} ${g}`),null!=i&&_.push(`${Math.round(i)}%`)}const $=this._pendingValues.temperature??t.attributes.temperature,v=void 0!==this._pendingValues.temperature,y=t.attributes.min_temp??7,b=t.attributes.max_temp??35,w=this._getTemperatureCallbacks(),x=!1!==d&&!1!==e.icon,A=a||!x?"":`background-color: rgba(${r}, 0.2)`,C=a?"":`color: ${n}`,E=!c&&void 0!==$;return V`
       <div class="compact">
         <div
           class="compact-left"
@@ -518,13 +518,13 @@
           @pointerup=${this._onPointerUp}
           @pointercancel=${this._onPointerCancel}
         >
-          ${C?V`
+          ${x?V`
                 <div
                   class="icon-wrapper ${e.toggle?.entity?"toggleable":""}"
                   @click=${e.toggle?.entity?t=>{t.stopPropagation(),this._handleToggle(e)}:W}
                 >
-                  <div class="icon-shape" style="${E}">
-                    <ha-icon .icon=${d} style="${S}"></ha-icon>
+                  <div class="icon-shape" style="${A}">
+                    <ha-icon .icon=${d} style="${C}"></ha-icon>
                   </div>
                   ${this._renderToggleBadge(e)}
                 </div>
@@ -533,29 +533,29 @@
             ${!1!==e.name?V`<div class="name">${i}</div>`:W}
             <div class="secondary">
               ${u}
-              ${v.length>0?V` <span class="stats">\u00b7 ${v.join(" · ")}</span>`:W}
+              ${_.length>0?V` <span class="stats">\u00b7 ${_.join(" · ")}</span>`:W}
             </div>
           </div>
         </div>
         <div class="compact-right">
           ${this._renderFaults(e)}
-          ${T?V`
+          ${E?V`
                 <div class="compact-controls">
                   <button
                     class="temp-button"
-                    @click=${t=>{t.stopPropagation(),A.onDecrement("temperature")}}
-                    ?disabled=${y<=w}
+                    @click=${t=>{t.stopPropagation(),w.onDecrement("temperature")}}
+                    ?disabled=${$<=y}
                   >
                     <ha-icon .icon=${"mdi:minus"}></ha-icon>
                   </button>
-                  <div class="compact-temp ${b?"updating":""}">
-                    ${Ct(y,$)}
-                    <span class="unit">${_}</span>
+                  <div class="compact-temp ${v?"updating":""}">
+                    ${Ct($,m)}
+                    <span class="unit">${g}</span>
                   </div>
                   <button
                     class="temp-button"
-                    @click=${t=>{t.stopPropagation(),A.onIncrement("temperature")}}
-                    ?disabled=${y>=x}
+                    @click=${t=>{t.stopPropagation(),w.onIncrement("temperature")}}
+                    ?disabled=${$>=b}
                   >
                     <ha-icon .icon=${"mdi:plus"}></ha-icon>
                   </button>

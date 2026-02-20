@@ -297,9 +297,7 @@ export class DiraThermostatCard extends LitElement {
                     effectiveControl,
                     (type, value) => this._onModeSelect(type, value)
                   )}
-                  ${this._config.hide?.state !== true
-                    ? renderSensors(this, this._hass, stateObj, this._config)
-                    : nothing}
+                  ${renderSensors(this, this._hass, stateObj, this._config)}
                 </div>
               `
             : nothing}
@@ -320,9 +318,7 @@ export class DiraThermostatCard extends LitElement {
           effectiveControl,
           (type, value) => this._onModeSelect(type, value)
         )}
-        ${this._config.hide?.state !== true
-          ? renderSensors(this, this._hass, stateObj, this._config)
-          : nothing}
+        ${renderSensors(this, this._hass, stateObj, this._config)}
       </ha-card>
     `;
   }
@@ -359,18 +355,20 @@ export class DiraThermostatCard extends LitElement {
       secondary = `${secondary} \u00b7 ${fanMode}`;
     }
 
-    // Stats: current temp + humidity
-    const currentTemp = stateObj.attributes.current_temperature;
-    const humidity = stateObj.attributes.current_humidity;
+    // Stats: current temp + humidity (hidden with hide.state)
     const unit = getUnit(stateObj, this._config.unit);
     const decimals = this._config.decimals ?? 1;
 
     const statsItems: string[] = [];
-    if (currentTemp !== undefined && currentTemp !== null) {
-      statsItems.push(`${formatTemperature(currentTemp, decimals)} ${unit}`);
-    }
-    if (humidity !== undefined && humidity !== null) {
-      statsItems.push(`${Math.round(humidity)}%`);
+    if (this._config.hide?.state !== true) {
+      const currentTemp = stateObj.attributes.current_temperature;
+      const humidity = stateObj.attributes.current_humidity;
+      if (currentTemp !== undefined && currentTemp !== null) {
+        statsItems.push(`${formatTemperature(currentTemp, decimals)} ${unit}`);
+      }
+      if (humidity !== undefined && humidity !== null) {
+        statsItems.push(`${Math.round(humidity)}%`);
+      }
     }
 
     // Target temp for +/- controls
