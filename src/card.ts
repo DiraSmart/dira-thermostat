@@ -239,6 +239,7 @@ export class DiraThermostatCard extends LitElement {
     super.disconnectedCallback();
     this._clearCollapseTimer();
     clearTimeout(this._longPressTimer);
+    this._expanded = false;
   }
 
   // ---- Mode Select Handler ----
