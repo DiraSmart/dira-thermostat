@@ -15,6 +15,11 @@ A modern thermostat card for [Home Assistant](https://www.home-assistant.io/) wi
 - Single and dual setpoint temperature support
 - External sensor display (humidity, temperature, etc.)
 - Compact mode with inline expand/collapse (auto-collapses after 10s)
+- Long press to open more-info dialog on any mode
+- Toggle badge on icon (control lights, switches, etc.)
+- Fault indicators from binary sensors
+- YAML key order respected for mode button ordering
+- Visual editor with all major options
 - Dark mode and light mode support
 - English and Spanish localization (auto-detected)
 - Fully customizable: colors, icons, names, layout per mode
@@ -92,14 +97,16 @@ Controls the top section of the card with icon, name, toggle switch, and fault i
 | `header.toggle` | object | — | Toggle switch config (see below) |
 | `header.faults` | array | — | Fault indicator config (see below) |
 
-#### Toggle Switch
+#### Toggle Badge
 
-Shows a switch in the header to control a separate entity (e.g., a power switch).
+Shows a small badge icon on the bottom-right of the main HVAC icon. Tap it to toggle a separate entity on/off (e.g., A/C light, power switch). Supports custom icons for on/off states.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `header.toggle.entity` | string | **required** | Entity to toggle (e.g., `switch.hvac_power`) |
-| `header.toggle.name` | string/boolean | — | Label text, `true` for entity friendly name |
+| `header.toggle.entity` | string | **required** | Entity to toggle (e.g., `switch.hvac_light`) |
+| `header.toggle.icon_on` | string | `mdi:circle` | Icon when entity is on |
+| `header.toggle.icon_off` | string | `mdi:circle-outline` | Icon when entity is off |
+| `header.toggle.name` | string/boolean | — | Label text (reserved for future use) |
 
 #### Fault Indicators
 
@@ -120,8 +127,9 @@ header:
   name: "Living Room"
   icon: mdi:home-thermometer
   toggle:
-    entity: switch.hvac_power
-    name: "Power"
+    entity: switch.hvac_light
+    icon_on: mdi:lightbulb
+    icon_off: mdi:lightbulb-off
   faults:
     - entity: binary_sensor.hvac_fault
       icon: mdi:alert-circle
@@ -176,6 +184,8 @@ Each control type accepts an object where keys are the **exact mode values** fro
 | `{mode}.include` | boolean | `true` | Set `false` to exclude this mode |
 
 > **Note:** The mode keys must match the exact values from your climate entity. For example, if your entity reports fan modes as `"Circulation"`, `"Auto low"`, `"Low"`, use those exact strings as keys.
+
+> **Order:** When you define modes in config, the **display order matches the YAML key order**. Modes not listed in config are appended at the end. If no custom config is provided, HVAC uses a default order (off, heat, cool, auto, dry, fan_only) and others follow the entity order.
 
 #### Example: Honeywell T6 Pro thermostat
 
@@ -455,7 +465,12 @@ service:
 
 ### Compact Mode (popup)
 
-When `popup: true`, the card renders as a compact tile. Tapping it expands inline to show all controls, and **auto-collapses after 10 seconds** of inactivity. Any interaction (changing mode, adjusting temperature) resets the timer.
+When `popup: true`, the card renders as a compact tile with expand/collapse behavior:
+
+- **Single tap** on the header: **toggles** expand/collapse
+- **Long press** on the header: opens the **more-info** dialog
+- **Auto-collapses** after 10 seconds of inactivity
+- Any interaction (changing mode, adjusting temperature) resets the timer
 
 ```yaml
 type: custom:dira-thermostat
@@ -466,12 +481,39 @@ show_fan_speed: true
 
 The compact card shows:
 - Mode icon with color (colored by current HVAC mode)
+- Toggle badge (if configured)
 - Entity name and current mode
 - Optional fan speed (`show_fan_speed: true`)
 - Current temperature and humidity stats
 - Target temperature with +/- buttons (hidden when off or fan_only)
 
-Tapping the compact card expands to show: temperature controls, HVAC modes, fan, swing, presets, and sensors.
+Tapping the compact card expands to show: HVAC modes, fan, swing, presets, and sensors.
+
+### Interaction (full card mode)
+
+When `popup` is not set (full card):
+
+- **Single tap** on the header: does nothing
+- **Long press** on the header: opens the **more-info** dialog
+
+---
+
+### Visual Editor
+
+The card includes a visual editor accessible from the dashboard UI (no YAML needed for basic setup). Available options:
+
+- **Entity** — climate entity picker
+- **Name** and **Icon** — custom name and icon
+- **Step size** and **Decimals** — temperature controls
+- **Toggle entity** — entity for the toggle badge (switch, light, input_boolean)
+- **Compact mode** — enable expand/collapse behavior
+- **Show header** — show/hide the header row
+- **Show fan mode** / **preset** / **swing** — enable/disable mode sections
+- **Show fan speed in header** — display current fan speed next to mode
+- **Show current action** — display heating/cooling/idle in header
+- **Hide temperature** / **Hide sensors** — hide specific sections
+
+For advanced configuration (custom mode names, icons, colors, faults, sensors, etc.), use the YAML code editor.
 
 ---
 
@@ -492,8 +534,9 @@ show_fan_speed: true
 
 header:
   toggle:
-    entity: switch.hvac_power
-    name: "Power"
+    entity: switch.hvac_light
+    icon_on: mdi:lightbulb
+    icon_off: mdi:lightbulb-off
   faults:
     - entity: binary_sensor.hvac_fault
       icon: mdi:alert-circle
