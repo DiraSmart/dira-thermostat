@@ -82,6 +82,8 @@ export interface ModeOptionConfig {
 export interface ModeControlConfig {
   _name?: string;
   _hide_when_off?: boolean;
+  _names?: boolean;
+  _icons?: boolean;
   [mode: string]: string | boolean | ModeOptionConfig | undefined;
 }
 

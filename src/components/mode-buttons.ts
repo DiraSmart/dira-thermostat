@@ -97,6 +97,17 @@ export function renderAllControls(
     if (typeConfig === false || typeConfig === undefined) continue;
 
     const modeType = MODE_TYPES[typeKey];
+
+    // Per-type overrides: _names and _icons in control config take priority
+    const sectionShowNames =
+      typeof typeConfig === "object" && typeConfig._names !== undefined
+        ? typeConfig._names
+        : showNames;
+    const sectionShowIcons =
+      typeof typeConfig === "object" && typeConfig._icons !== undefined
+        ? typeConfig._icons
+        : showIcons;
+
     const section = renderModeSection(
       hass,
       stateObj,
@@ -104,8 +115,8 @@ export function renderAllControls(
       modeType,
       typeConfig,
       lang,
-      showNames,
-      showIcons,
+      sectionShowNames,
+      sectionShowIcons,
       showHeadings,
       (value: string) => onModeSelect(typeKey, value)
     );
