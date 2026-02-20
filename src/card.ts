@@ -7,6 +7,7 @@ import {
   ControlConfig,
   ControlType,
   HeaderConfig,
+  HeaderStatConfig,
 } from "./types";
 import { cardStyles } from "./styles";
 import { localize } from "./localize";
@@ -265,6 +266,32 @@ export class DiraThermostatCard extends LitElement {
 
   // ---- Helpers ----
 
+  private _resolveStatValue(
+    stateObj: HassEntity,
+    stat: HeaderStatConfig
+  ): string | null {
+    let raw: any;
+
+    if (stat.entity) {
+      const entity = this._hass.states[stat.entity];
+      if (!entity) return null;
+      raw = stat.attribute ? entity.attributes[stat.attribute] : entity.state;
+    } else if (stat.attribute) {
+      raw = stateObj.attributes[stat.attribute];
+    } else {
+      return null;
+    }
+
+    if (raw === undefined || raw === null) return null;
+
+    const num = Number(raw);
+    if (!isNaN(num) && stat.decimals !== undefined) {
+      return `${formatTemperature(num, stat.decimals)}${stat.unit ? ` ${stat.unit}` : ""}`;
+    }
+
+    return `${raw}${stat.unit ? ` ${stat.unit}` : ""}`;
+  }
+
   // ---- Render ----
 
   render() {
@@ -355,19 +382,30 @@ export class DiraThermostatCard extends LitElement {
       secondary = `${secondary} \u00b7 ${fanMode}`;
     }
 
-    // Stats: current temp + humidity (hidden with hide.state)
+    // Stats: configurable via header.stats, fallback to current_temperature + current_humidity
     const unit = getUnit(stateObj, this._config.unit);
     const decimals = this._config.decimals ?? 1;
 
     const statsItems: string[] = [];
-    if (this._config.hide?.state !== true) {
-      const currentTemp = stateObj.attributes.current_temperature;
-      const humidity = stateObj.attributes.current_humidity;
-      if (currentTemp !== undefined && currentTemp !== null) {
-        statsItems.push(`${formatTemperature(currentTemp, decimals)} ${unit}`);
-      }
-      if (humidity !== undefined && humidity !== null) {
-        statsItems.push(`${Math.round(humidity)}%`);
+    if (this._config.hide?.state !== true && headerConfig.stats !== false) {
+      if (headerConfig.stats && headerConfig.stats.length > 0) {
+        // User-configured stats
+        for (const stat of headerConfig.stats) {
+          const value = this._resolveStatValue(stateObj, stat);
+          if (value !== null) {
+            statsItems.push(value);
+          }
+        }
+      } else {
+        // Default: current_temperature + current_humidity from climate entity
+        const currentTemp = stateObj.attributes.current_temperature;
+        const humidity = stateObj.attributes.current_humidity;
+        if (currentTemp !== undefined && currentTemp !== null) {
+          statsItems.push(`${formatTemperature(currentTemp, decimals)} ${unit}`);
+        }
+        if (humidity !== undefined && humidity !== null) {
+          statsItems.push(`${Math.round(humidity)}%`);
+        }
       }
     }
 

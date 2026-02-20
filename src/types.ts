@@ -66,11 +66,19 @@ export interface ToggleConfig {
   icon_off?: string;
 }
 
+export interface HeaderStatConfig {
+  entity?: string;
+  attribute?: string;
+  unit?: string;
+  decimals?: number;
+}
+
 export interface HeaderConfig {
   name?: string | false;
   icon?: string | false;
   toggle?: ToggleConfig;
   faults?: FaultConfig[];
+  stats?: HeaderStatConfig[] | false;
 }
 
 export interface ModeOptionConfig {
