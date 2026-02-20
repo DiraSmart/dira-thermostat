@@ -8,40 +8,34 @@ A modern thermostat card for [Home Assistant](https://www.home-assistant.io/) wi
 
 ## Features
 
-- Mushroom-style modern design with segmented controls and smooth animations
-- Full HVAC, Fan, Swing, and Preset mode controls
-- Auto-detection of available modes from entity (fan, preset, swing)
-- Smart behavior: hides temperature and secondary modes when off or fan_only
-- Single and dual setpoint temperature support
-- External sensor display (humidity, temperature, etc.)
-- Compact mode with inline expand/collapse (auto-collapses after 10s)
-- Long press to open more-info dialog on any mode
-- Toggle badge on icon (control lights, switches, etc.)
+- Mushroom-style design with smooth animations (280ms)
+- HVAC, Fan, Swing, and Preset mode controls with auto-detection
+- Compact mode with inline expand/collapse
+- Toggle badge on icon for controlling lights, switches, etc.
+- Configurable header stats (temperature, humidity, external sensors)
 - Fault indicators from binary sensors
-- YAML key order respected for mode button ordering
-- Visual editor with all major options
-- Dark mode and light mode support
-- English and Spanish localization (auto-detected)
-- Fully customizable: colors, icons, names, layout per mode
-- No external HACS dependencies
+- Per-type layout control (icons/names per section)
+- Custom colors, icons, and names per mode
+- YAML key order respected for button ordering
+- Visual editor for basic setup
+- Dark and light mode support
+- English and Spanish (auto-detected)
+- No external dependencies
 
 ## Installation
 
 ### HACS (Recommended)
 
-1. Open HACS in your Home Assistant
-2. Go to **Frontend** > **Custom repositories**
-3. Add `https://github.com/DiraSmart/dira-thermostat` as a **Lovelace** repository
-4. Search for **Dira Thermostat** and install it
-5. Refresh your browser
+1. Open HACS > **Frontend** > **Custom repositories**
+2. Add `https://github.com/DiraSmart/dira-thermostat` as **Lovelace**
+3. Search for **Dira Thermostat** and install
+4. Refresh your browser
 
 ### Manual
 
 1. Download `dira-thermostat.js` from the [latest release](https://github.com/DiraSmart/dira-thermostat/releases)
-2. Copy it to `/config/www/dira-thermostat.js`
-3. Go to **Settings** > **Dashboards** > **Resources**
-4. Add `/local/dira-thermostat.js` as a **JavaScript Module**
-5. Refresh your browser
+2. Copy to `/config/www/dira-thermostat.js`
+3. **Settings** > **Dashboards** > **Resources** > Add `/local/dira-thermostat.js` as JavaScript Module
 
 ## Quick Start
 
@@ -50,119 +44,115 @@ type: custom:dira-thermostat
 entity: climate.living_room
 ```
 
-That's it! The card will automatically display your climate entity with HVAC modes.
+The card auto-detects available modes and displays them.
 
 ---
 
-## Configuration Reference
+## Configuration
 
-### Basic Options
+### Basic
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `entity` | string | **required** | Climate entity ID (e.g., `climate.living_room`) |
-| `name` | string | Entity friendly name | Custom card name |
-| `icon` | string | Auto by mode | Custom header icon (e.g., `mdi:thermostat`) |
-| `step_size` | number | `0.5` | Temperature increment per button press |
-| `decimals` | number | `1` | Decimal places for temperature display |
-| `unit` | string/boolean | Entity unit | Temperature unit (`"°F"`, `"°C"`, `false` to hide) |
-| `fallback` | string | `"N/A"` | Text shown when value is unavailable |
-| `popup` | boolean | `false` | Enable compact mode (tap to expand inline, auto-collapses after 10s) |
-| `show_action` | boolean | `false` | Show HVAC action (heating/cooling/idle) in header secondary text |
-| `show_fan_speed` | boolean | `false` | Show current fan speed in header secondary text |
-
-### Example
-
-```yaml
-type: custom:dira-thermostat
-entity: climate.bedroom
-name: "Bedroom A/C"
-icon: mdi:air-conditioner
-step_size: 1
-decimals: 0
-popup: false
-```
+| `entity` | string | **required** | Climate entity ID |
+| `name` | string | Entity name | Custom card name |
+| `icon` | string | Auto by mode | Custom icon (e.g. `mdi:air-conditioner`) |
+| `step_size` | number | `0.5` | Temperature step per button press |
+| `decimals` | number | `1` | Decimal places for temperature |
+| `unit` | string/boolean | Entity unit | Temperature unit. `false` to hide |
+| `fallback` | string | `"N/A"` | Text when value is unavailable |
+| `popup` | boolean | `false` | Compact mode (tap to expand) |
+| `show_action` | boolean | `false` | Show current action in header (heating/cooling/idle) |
+| `show_fan_speed` | boolean | `false` | Show fan speed in header |
 
 ---
 
 ### Header
 
-Controls the top section of the card with icon, name, toggle switch, and fault indicators.
+The top row: icon, name, secondary text, toggle, faults, and temperature controls.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `header` | object/false | `{}` | Header config, or `false` to hide completely |
-| `header.name` | string/false | Entity name | Custom name, `false` to hide |
-| `header.icon` | string/false | Auto | Custom icon, `false` to hide |
-| `header.toggle` | object | — | Toggle switch config (see below) |
-| `header.faults` | array | — | Fault indicator config (see below) |
+| `header` | object/false | `{}` | Header config. `false` to hide entirely |
+| `header.name` | string/false | Entity name | Custom name. `false` to hide |
+| `header.icon` | string/false | Auto | Custom icon. `false` to hide |
 
-#### Toggle Badge
+#### Toggle
 
-Shows a small badge icon on the bottom-right of the main HVAC icon. Tap it to toggle a separate entity on/off (e.g., A/C light, power switch). Supports custom icons for on/off states.
+A badge on the HVAC icon that toggles a separate entity (light, switch, etc.). Tap the icon to toggle.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `header.toggle.entity` | string | **required** | Entity to toggle (e.g., `switch.hvac_light`) |
-| `header.toggle.icon_on` | string | `mdi:circle` | Icon when entity is on |
-| `header.toggle.icon_off` | string | `mdi:circle-outline` | Icon when entity is off |
-| `header.toggle.name` | string/boolean | — | Label text (reserved for future use) |
+| `header.toggle.entity` | string | **required** | Entity to toggle |
+| `header.toggle.icon_on` | string | `mdi:circle` | Icon when on |
+| `header.toggle.icon_off` | string | `mdi:circle-outline` | Icon when off |
 
-#### Fault Indicators
+#### Faults
 
-Shows icons when binary sensors indicate faults (e.g., filter dirty, compressor error).
+Icons that show when binary sensors are active (filter dirty, compressor error, etc.).
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `entity` | string | **required** | Binary sensor entity ID |
-| `icon` | string | Entity icon | Custom fault icon |
-| `hide_inactive` | boolean | `false` | Hide icon when fault is not active |
+| `faults[].entity` | string | **required** | Binary sensor entity |
+| `faults[].icon` | string | Entity icon | Custom icon |
+| `faults[].hide_inactive` | boolean | `false` | Hide when not active |
 
-#### Example
+#### Stats
+
+The values shown in the header secondary text (e.g. "Cool · 24 °C · 60%"). By default shows `current_temperature` and `current_humidity` from the climate entity. You can override with custom entities.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `header.stats` | array/false | Auto (temp + humidity) | Custom stats. `false` to hide all |
+| `stats[].entity` | string | Climate entity | External sensor entity |
+| `stats[].attribute` | string | — | Attribute to read (e.g. `current_humidity`) |
+| `stats[].unit` | string | — | Unit to display |
+| `stats[].decimals` | number | — | Decimal places |
 
 ```yaml
-type: custom:dira-thermostat
-entity: climate.living_room
 header:
-  name: "Living Room"
-  icon: mdi:home-thermometer
   toggle:
-    entity: switch.hvac_light
+    entity: switch.ac_light
     icon_on: mdi:lightbulb
     icon_off: mdi:lightbulb-off
   faults:
-    - entity: binary_sensor.hvac_fault
-      icon: mdi:alert-circle
-      hide_inactive: true
     - entity: binary_sensor.filter_dirty
       icon: mdi:air-filter
+      hide_inactive: true
+  stats:
+    - entity: sensor.room_temperature
+      unit: °C
+      decimals: 1
+    - entity: sensor.room_humidity
+      unit: "%"
+```
+
+To hide the default stats without replacing them:
+
+```yaml
+header:
+  stats: false
 ```
 
 ---
 
-### Control Modes
+### Control
 
-Configure which mode controls are displayed and how they look. Supports four control types: `hvac`, `fan`, `preset`, and `swing`.
+Configure which mode buttons are shown. Four types: `hvac`, `fan`, `preset`, `swing`.
 
-**Auto-detection:** If you don't specify `control`, the card automatically detects which modes your entity supports (fan_modes, preset_modes, swing_modes) and shows them.
-
-**Smart hide:** Fan, preset, and swing sections are **hidden by default when the entity is off**. Temperature controls are also hidden when off or in fan_only mode. HVAC mode buttons are always visible so you can turn the entity back on.
+If `control` is not set, the card auto-detects available modes from the entity.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `control` | object/false | Auto-detected | Control config, or `false` to hide all |
-| `control.hvac` | boolean/object | `true` | HVAC modes (off, heat, cool, auto, dry, fan_only) |
-| `control.fan` | boolean/object | Auto-detected | Fan modes (auto, low, medium, high, etc.) |
-| `control.preset` | boolean/object | Auto-detected | Preset modes (home, away, eco, sleep, etc.) |
-| `control.swing` | boolean/object | Auto-detected | Swing modes (on, off, vertical, horizontal) |
+| `control` | object/false | Auto | `false` to hide all controls |
+| `control.hvac` | boolean/object | `true` | HVAC mode buttons |
+| `control.fan` | boolean/object | Auto | Fan mode buttons |
+| `control.preset` | boolean/object | Auto | Preset mode buttons |
+| `control.swing` | boolean/object | Auto | Swing mode buttons |
 
-#### Simple: Show/hide modes
+#### Simple: show/hide
 
 ```yaml
-# Auto-detect all available modes (default)
-control:
-
-# Or explicitly enable/disable
 control:
   hvac: true
   fan: true
@@ -170,77 +160,22 @@ control:
   swing: false
 ```
 
-#### Advanced: Customize each mode
+#### Advanced: customize per mode
 
-Each control type accepts an object where keys are the **exact mode values** from your entity. You can customize the name, icon, and visibility of each mode.
+Each control type accepts an object. Keys starting with `_` are section settings; other keys are mode values from your entity.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `_name` | string | Auto (localized) | Custom section heading (shown when `layout.mode.headings: true`) |
-| `_hide_when_off` | boolean | `true` for fan/preset/swing, `false` for hvac | Hide this section when entity is off |
-| `{mode}` | boolean/object | `true` | `false` or `{include: false}` to exclude a mode |
-| `{mode}.name` | string/false | Auto (localized) | Custom display name for this mode |
-| `{mode}.icon` | string/false | Auto | Custom icon for this mode |
-| `{mode}.include` | boolean | `true` | Set `false` to exclude this mode |
+| `_name` | string | Auto | Section heading (visible with `layout.*.headings: true`) |
+| `_hide_when_off` | boolean | `true` (fan/preset/swing), `false` (hvac) | Hide when entity is off |
+| `{mode}` | boolean/object | `true` | `false` to exclude a mode |
+| `{mode}.name` | string/false | Auto | Custom display name |
+| `{mode}.icon` | string/false | Auto | Custom icon |
+| `{mode}.include` | boolean | `true` | `false` to exclude |
 
-> **Note:** The mode keys must match the exact values from your climate entity. For example, if your entity reports fan modes as `"Circulation"`, `"Auto low"`, `"Low"`, use those exact strings as keys.
-
-> **Order:** When you define modes in config, the **display order matches the YAML key order**. Modes not listed in config are appended at the end. If no custom config is provided, HVAC uses a default order (off, heat, cool, auto, dry, fan_only) and others follow the entity order.
-
-#### Example: Honeywell T6 Pro thermostat
+**Order:** Modes display in the order you write them in YAML. Unspecified modes are appended at the end.
 
 ```yaml
-type: custom:dira-thermostat
-entity: climate.t6_pro_thermostat
-step_size: 0.5
-show_fan_speed: true
-header: false
-hide:
-  temperature: true
-  state: true
-control:
-  hvac:
-    heat:
-      name: "Heat"
-      icon: mdi:fire
-    cool:
-      name: "Cool"
-      icon: mdi:snowflake
-    heat_cool:
-      name: "Auto"
-      icon: mdi:autorenew
-    fan_only:
-      name: "Fan"
-    off:
-      name: "Off"
-    dry: false              # Exclude dry mode
-  fan:
-    _hide_when_off: true    # Hidden when off (this is the default)
-    Circulation:
-      name: "Circulate"
-      icon: mdi:autorenew
-    "Auto low":
-      name: "Automatic"
-      icon: mdi:refresh-auto
-    Low:
-      name: "Always On"
-      icon: mdi:fan
-  preset: true              # Show all available presets with default names/icons
-  swing: false              # Don't show swing controls
-sensors:
-  - entity: sensor.t6_pro_thermostat_air_temperature
-    name: "Temp"
-  - entity: sensor.t6_pro_thermostat_humidity
-    name: "Humidity"
-    decimals: 0
-```
-
-#### Example: Basic A/C with custom mode names
-
-```yaml
-type: custom:dira-thermostat
-entity: climate.bedroom_ac
-name: "Bedroom"
 control:
   hvac:
     cool:
@@ -248,288 +183,225 @@ control:
       icon: mdi:snowflake
     heat:
       name: "Warm"
-      icon: mdi:fire
     auto: true
-    dry:
-      include: false
-    fan_only:
-      include: false
+    dry: false
   fan:
-    auto:
-      name: "Auto"
-      icon: mdi:fan-auto
+    _hide_when_off: true
     low:
       name: "Low"
-      icon: mdi:fan-speed-1
     medium:
-      name: "Medium"
-      icon: mdi:fan-speed-2
+      name: "Med"
     high:
       name: "High"
-      icon: mdi:fan-speed-3
-```
-
-#### Default Icons
-
-**HVAC modes:**
-| Mode | Icon | Color |
-|------|------|-------|
-| `off` | `mdi:power` | `#8a8a8a` |
-| `heat` | `mdi:fire` | `#ff8100` |
-| `cool` | `mdi:snowflake` | `#2b9af9` |
-| `auto` | `mdi:autorenew` | `#4caf50` |
-| `heat_cool` | `mdi:autorenew` | `#4caf50` |
-| `dry` | `mdi:water-percent` | `#efbd07` |
-| `fan_only` | `mdi:fan` | `#8a8a8a` |
-
-**Fan modes:**
-| Mode | Icon |
-|------|------|
-| `auto` | `mdi:fan-auto` |
-| `low` | `mdi:fan-speed-1` |
-| `medium` | `mdi:fan-speed-2` |
-| `high` | `mdi:fan-speed-3` |
-| `on` / `off` | `mdi:fan` / `mdi:fan-off` |
-
-**Preset modes:**
-| Mode | Icon |
-|------|------|
-| `home` | `mdi:home` |
-| `away` | `mdi:account-arrow-right` |
-| `eco` | `mdi:leaf` |
-| `sleep` | `mdi:bed` |
-| `boost` | `mdi:rocket-launch` |
-| `comfort` | `mdi:sofa` |
-
-**Swing modes:**
-| Mode | Icon |
-|------|------|
-| `on` / `off` | `mdi:arrow-oscillating` / `mdi:arrow-oscillating-off` |
-| `vertical` | `mdi:arrow-up-down` |
-| `horizontal` | `mdi:arrow-left-right` |
-| `both` | `mdi:arrow-oscillating` |
-
----
-
-### Sensors
-
-Display additional sensor values below the controls (humidity, outdoor temperature, energy usage, etc.).
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `sensors` | array/false | — | Array of sensor configs, `false` to hide |
-
-Each sensor item:
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `entity` | string | Main entity | External sensor entity ID |
-| `attribute` | string | — | Entity attribute to read (e.g., `current_humidity`) |
-| `name` | string | Auto | Display label |
-| `icon` | string | — | Icon to show (e.g., `mdi:water-percent`) |
-| `unit` | string | Entity unit | Custom unit string |
-| `decimals` | number | — | Round value to N decimal places |
-| `type` | string | — | Set to `"relativetime"` for time-ago display |
-
-#### Example
-
-```yaml
-sensors:
-  - attribute: current_humidity
-    name: "Humidity"
-    icon: mdi:water-percent
-    unit: "%"
-  - entity: sensor.outdoor_temperature
-    name: "Outside"
-    icon: mdi:thermometer
-    decimals: 1
-  - entity: sensor.hvac_energy
-    name: "Energy"
-    icon: mdi:lightning-bolt
-    unit: "kWh"
-  - entity: sensor.hvac_filter
-    name: "Filter"
-    icon: mdi:air-filter
-    type: relativetime
-```
-
----
-
-### Setpoints
-
-Configure temperature setpoint display for single or dual thermostats.
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `setpoints` | object/false | Auto-detected | Setpoint config, `false` to hide |
-| `setpoints.temperature.hide` | boolean | `false` | Hide single setpoint |
-| `setpoints.target_temp_low.hide` | boolean | `false` | Hide low setpoint (dual) |
-| `setpoints.target_temp_high.hide` | boolean | `false` | Hide high setpoint (dual) |
-
-The card automatically detects single vs. dual setpoint based on entity attributes.
-
-```yaml
-# Hide low setpoint in dual mode
-setpoints:
-  target_temp_low:
-    hide: true
-  target_temp_high:
-    hide: false
+    auto:
+      name: "Auto"
+  preset: true
+  swing: false
 ```
 
 ---
 
 ### Layout
 
-Control the visual layout of the card.
+Control icons, names, and headings **per control type**. Each section is independent.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `layout.step` | string | `"column"` | Temperature button direction: `"row"` or `"column"` |
-| `layout.mode.names` | boolean | `true` | Show text names on mode buttons |
-| `layout.mode.icons` | boolean | `true` | Show icons on mode buttons |
-| `layout.mode.headings` | boolean | `false` | Show section headings above modes |
-| `layout.sensors.type` | string | `"list"` | Sensor layout: `"list"` or `"table"` |
-| `layout.sensors.labels` | boolean | `true` | Show sensor labels |
+| `layout.mode` | object | — | Layout for HVAC buttons (alias for `layout.hvac`) |
+| `layout.hvac` | object | — | Layout for HVAC buttons |
+| `layout.fan` | object | — | Layout for fan buttons |
+| `layout.preset` | object | — | Layout for preset buttons |
+| `layout.swing` | object | — | Layout for swing buttons |
 
-#### Example
+Each accepts:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `names` | boolean | `true` | Show text names |
+| `icons` | boolean | `true` | Show icons |
+| `headings` | boolean | `false` | Show section heading |
 
 ```yaml
-# Icon-only mode buttons, no headings
 layout:
   mode:
-    names: false
-    icons: true
-    headings: false
-  sensors:
-    type: table
-    labels: true
+    names: false      # HVAC: icons only
+  fan:
+    icons: false      # Fan: names only
+  preset:
+    names: false      # Preset: icons only
+    headings: true    # Show "Preset" heading
+```
+
+`layout.mode` and `layout.hvac` are equivalent. Each type reads **only its own section** — setting `layout.mode.names: false` does NOT affect fan, preset, or swing.
+
+#### Sensors layout
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `layout.sensors.type` | string | `"list"` | `"list"` or `"table"` |
+| `layout.sensors.labels` | boolean | `true` | Show sensor labels |
+
+---
+
+### Sensors
+
+Display additional values below the controls. Independent from header stats.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sensors` | array/false | — | Array of sensors. `false` to hide |
+
+Each sensor requires `entity` or `attribute` (at least one):
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `entity` | string | Climate entity | External sensor entity |
+| `attribute` | string | — | Attribute to read from the entity |
+| `name` | string | Auto | Display label |
+| `icon` | string | — | Icon (e.g. `mdi:water-percent`) |
+| `unit` | string | Entity unit | Custom unit |
+| `decimals` | number | — | Decimal places |
+| `type` | string | — | `"relativetime"` for time-ago display |
+
+```yaml
+sensors:
+  - entity: sensor.outdoor_temp
+    name: "Outside"
+    icon: mdi:thermometer
+    decimals: 1
+  - attribute: current_humidity
+    name: "Humidity"
+    icon: mdi:water-percent
+    unit: "%"
 ```
 
 ---
 
 ### Hide
 
-Hide specific card elements.
-
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `hide.temperature` | boolean | `false` | Hide temperature controls |
-| `hide.state` | boolean | `false` | Hide sensors section |
+| `hide.temperature` | boolean | `false` | Hide temperature +/- controls |
+| `hide.state` | boolean | `false` | Hide stats from header (temp, humidity) |
 
 ```yaml
 hide:
-  temperature: false
-  state: true
+  temperature: true   # No +/- buttons
+  state: true         # No "24 °C · 60%" in header
 ```
+
+Note: `hide.state` hides the stats in the header secondary text. The `sensors` section at the bottom is always shown if configured.
 
 ---
 
-### Custom Colors
+### Colors
 
-Override the default colors for HVAC modes and control type sections.
+Override default colors for HVAC modes and control sections.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `colors` | object | — | Map of mode/type name to color |
-| `colors.heat` | string | `#ff8100` | Heat mode color |
-| `colors.cool` | string | `#2b9af9` | Cool mode color |
-| `colors.auto` | string | `#4caf50` | Auto mode color |
-| `colors.dry` | string | `#efbd07` | Dry mode color |
-| `colors.fan` | string | `var(--primary-color)` | Fan mode section active color |
-| `colors.preset` | string | `#b39ddb` | Preset section active color |
-| `colors.swing` | string | `#ffb74d` | Swing section active color |
+| Key | Default | Description |
+|-----|---------|-------------|
+| `heat` | `#ff8100` | Heat mode |
+| `cool` | `#2b9af9` | Cool mode |
+| `auto` / `heat_cool` | `#4caf50` | Auto modes |
+| `dry` | `#efbd07` | Dry mode |
+| `fan_only` / `off` | `#8a8a8a` | Fan only / Off |
+| `fan` | `var(--primary-color)` | Fan section active color |
+| `preset` | `#b39ddb` | Preset section active color |
+| `swing` | `#ffb74d` | Swing section active color |
 
 ```yaml
 colors:
-  # HVAC modes
   heat: "#ff6b35"
   cool: "#00b4d8"
-  auto: "#2ecc71"
-  dry: "#f39c12"
-  # Control sections
   fan: "#4dd0e1"
   preset: "#e91e63"
-  swing: "#ff9800"
 ```
 
 ---
 
 ### Service Override
 
-Override the service call for temperature changes (for custom integrations).
+Override the service call for temperature changes.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `service.domain` | string | `"climate"` | Service domain |
 | `service.service` | string | `"set_temperature"` | Service name |
-| `service.data` | object | `{}` | Additional data merged into service call |
+| `service.data` | object | `{}` | Extra data merged into call |
+
+---
+
+### Setpoints
+
+Configure dual setpoint display.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `setpoints.temperature.hide` | boolean | `false` | Hide single setpoint |
+| `setpoints.target_temp_low.hide` | boolean | `false` | Hide low setpoint |
+| `setpoints.target_temp_high.hide` | boolean | `false` | Hide high setpoint |
+
+---
+
+## Interaction
+
+| Action | Compact mode (`popup: true`) | Full card mode |
+|--------|------------------------------|----------------|
+| **Tap header** | Toggle expand/collapse | Nothing |
+| **Long press header** | Open more-info dialog | Open more-info dialog |
+| **Tap icon** (with toggle) | Toggle the configured entity | Toggle the configured entity |
+| **Tap mode button** | Change mode | Change mode |
+
+Compact mode auto-collapses after 10 seconds of inactivity. Also collapses when navigating to another view/tab.
+
+---
+
+## Visual Editor
+
+Available from the dashboard UI for basic setup:
+
+- Entity picker (climate)
+- Name and icon
+- Step size and decimals
+- Toggle entity
+- Compact mode on/off
+- Show/hide: header, fan, preset, swing, fan speed, action, temperature, sensors
+
+For advanced options (custom mode names, icons, colors, faults, stats, sensors, layout), use the YAML editor.
+
+---
+
+## Smart Behavior
+
+| Entity state | Temperature +/- | HVAC modes | Fan/Preset/Swing |
+|-------------|-----------------|------------|------------------|
+| `off` | Hidden | Visible | Hidden |
+| `fan_only` | Hidden | Visible | Fan visible |
+| `heat` / `cool` / `auto` / `dry` | Visible | Visible | Visible |
+
+Fan, preset, and swing hide when off by default. Override with `_hide_when_off: false`:
 
 ```yaml
-service:
-  domain: climate
-  service: set_temperature
-  data:
-    hvac_mode: heat
+control:
+  fan:
+    _hide_when_off: false
 ```
 
 ---
 
-### Compact Mode (popup)
+## Default Icons
 
-When `popup: true`, the card renders as a compact tile with expand/collapse behavior:
+**HVAC:** off (`mdi:power`), heat (`mdi:fire`), cool (`mdi:snowflake`), auto (`mdi:autorenew`), dry (`mdi:water-percent`), fan_only (`mdi:fan`)
 
-- **Single tap** on the header: **toggles** expand/collapse
-- **Long press** on the header: opens the **more-info** dialog
-- **Auto-collapses** after 10 seconds of inactivity
-- Any interaction (changing mode, adjusting temperature) resets the timer
+**Fan:** auto (`mdi:fan-auto`), low (`mdi:fan-speed-1`), medium (`mdi:fan-speed-2`), high (`mdi:fan-speed-3`)
 
-```yaml
-type: custom:dira-thermostat
-entity: climate.bedroom
-popup: true
-show_fan_speed: true
-```
+**Preset:** home (`mdi:home`), away (`mdi:account-arrow-right`), eco (`mdi:leaf`), sleep (`mdi:bed`), boost (`mdi:rocket-launch`), comfort (`mdi:sofa`)
 
-The compact card shows:
-- Mode icon with color (colored by current HVAC mode)
-- Toggle badge (if configured)
-- Entity name and current mode
-- Optional fan speed (`show_fan_speed: true`)
-- Current temperature and humidity stats
-- Target temperature with +/- buttons (hidden when off or fan_only)
-
-Tapping the compact card expands to show: HVAC modes, fan, swing, presets, and sensors.
-
-### Interaction (full card mode)
-
-When `popup` is not set (full card):
-
-- **Single tap** on the header: does nothing
-- **Long press** on the header: opens the **more-info** dialog
+**Swing:** on (`mdi:arrow-oscillating`), off (`mdi:arrow-oscillating-off`), vertical (`mdi:arrow-up-down`), horizontal (`mdi:arrow-left-right`)
 
 ---
 
-### Visual Editor
-
-The card includes a visual editor accessible from the dashboard UI (no YAML needed for basic setup). Available options:
-
-- **Entity** — climate entity picker
-- **Name** and **Icon** — custom name and icon
-- **Step size** and **Decimals** — temperature controls
-- **Toggle entity** — entity for the toggle badge (switch, light, input_boolean)
-- **Compact mode** — enable expand/collapse behavior
-- **Show header** — show/hide the header row
-- **Show fan mode** / **preset** / **swing** — enable/disable mode sections
-- **Show fan speed in header** — display current fan speed next to mode
-- **Show current action** — display heating/cooling/idle in header
-- **Hide temperature** / **Hide sensors** — hide specific sections
-
-For advanced configuration (custom mode names, icons, colors, faults, sensors, etc.), use the YAML code editor.
-
----
-
-## Full Configuration Example
+## Full Example
 
 ```yaml
 type: custom:dira-thermostat
@@ -538,94 +410,81 @@ name: "Living Room"
 icon: mdi:home-thermometer
 step_size: 0.5
 decimals: 1
-unit: "°C"
-fallback: "N/A"
-popup: false
-show_action: false
+popup: true
+show_action: true
 show_fan_speed: true
 
 header:
   toggle:
-    entity: switch.hvac_light
+    entity: switch.ac_light
     icon_on: mdi:lightbulb
     icon_off: mdi:lightbulb-off
   faults:
-    - entity: binary_sensor.hvac_fault
-      icon: mdi:alert-circle
+    - entity: binary_sensor.filter_dirty
+      icon: mdi:air-filter
       hide_inactive: true
+  stats:
+    - entity: sensor.room_temperature
+      unit: °C
+      decimals: 1
+    - entity: sensor.room_humidity
+      unit: "%"
 
 control:
   hvac:
-    heat:
-      name: "Heat"
-      icon: mdi:fire
     cool:
       name: "Cool"
       icon: mdi:snowflake
-    heat_cool:
-      name: "Auto"
-    dry:
-      include: false
-    fan_only:
-      name: "Fan"
+    heat:
+      name: "Heat"
+    auto: true
+    dry: false
   fan:
-    auto:
-      name: "Auto"
-    low:
-      name: "Low"
-    high:
-      name: "High"
+    low: true
+    medium: true
+    high: true
+    auto: true
   preset: true
   swing: false
 
 sensors:
+  - entity: sensor.outdoor_temp
+    name: "Outside"
+    icon: mdi:thermometer
+    decimals: 1
   - attribute: current_humidity
     name: "Humidity"
     icon: mdi:water-percent
     unit: "%"
-  - entity: sensor.outdoor_temp
-    name: "Outside"
-    icon: mdi:thermometer
 
 layout:
   mode:
-    names: true
+    names: false
     icons: true
-    headings: false
+  fan:
+    icons: false
+    names: true
   sensors:
     type: list
-    labels: true
 
 colors:
-  heat: "#ff8100"
-  cool: "#2b9af9"
+  heat: "#ff6b35"
+  cool: "#00b4d8"
+  fan: "#4dd0e1"
 
 hide:
   temperature: false
   state: false
 ```
 
-### Smart Behavior Summary
-
-| Entity State | Temperature | HVAC modes | Fan/Preset/Swing |
-|-------------|-------------|------------|------------------|
-| `off` | Hidden | Visible | Hidden |
-| `fan_only` | Hidden | Visible | Fan visible |
-| `heat` / `cool` / `auto` / `dry` | Visible | Visible | Visible |
-
 ---
 
 ## Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Build for production
 npm run build
-
-# Watch mode (auto-rebuild on changes)
-npm run watch
+npm run watch    # auto-rebuild on changes
 ```
 
 ### Release
@@ -633,7 +492,7 @@ npm run watch
 ```bash
 git tag v1.0.0
 git push --tags
-# GitHub Actions will build and create the release automatically
+# GitHub Actions builds and creates the release
 ```
 
 ## License
