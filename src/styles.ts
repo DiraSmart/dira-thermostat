@@ -251,9 +251,10 @@ export const cardStyles = css`
     display: flex;
     background: rgba(var(--dira-rgb-text), 0.05);
     border-radius: var(--dira-radius-button);
-    padding: 3px;
-    gap: 2px;
+    padding: 0;
+    gap: 0;
     overflow-x: auto;
+    overflow: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -270,7 +271,7 @@ export const cardStyles = css`
     justify-content: center;
     gap: 4px;
     padding: 10px 8px;
-    border-radius: calc(var(--dira-radius-button) - 2px);
+    border-radius: var(--dira-radius-button);
     border: none;
     background: transparent;
     color: var(--secondary-text-color);
