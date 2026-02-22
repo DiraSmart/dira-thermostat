@@ -19,6 +19,7 @@ const translations: Record<string, Record<string, string>> = {
     "mode.dry": "Dry",
     "mode.fan_only": "Fan",
     "mode.heat_cool": "Auto",
+    "mode.unavailable": "Unavailable",
     // HVAC actions
     "action.off": "Off",
     "action.heating": "Heating",
@@ -63,6 +64,7 @@ const translations: Record<string, Record<string, string>> = {
     "mode.dry": "Seco",
     "mode.fan_only": "Ventilador",
     "mode.heat_cool": "Auto",
+    "mode.unavailable": "No disponible",
     // HVAC actions
     "action.off": "Apagado",
     "action.heating": "Calentando",
