@@ -587,11 +587,11 @@
 
         <!-- Name + Icon -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${ft("editor.name",t)}
             .value=${this._config.name??""}
             @input=${t=>this._updateConfig({name:t.target.value||void 0})}
-          ></ha-textfield>
+          ></ha-input>
 
           <ha-icon-picker
             .hass=${this._hass}
@@ -603,36 +603,36 @@
 
         <!-- Step size + Decimals -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${ft("editor.step_size",t)}
-            type="number"
+            .type=${"number"}
             .value=${String(this._config.step_size??.5)}
             @input=${t=>{const e=parseFloat(t.target.value);!isNaN(e)&&e>0&&this._updateConfig({step_size:e})}}
-          ></ha-textfield>
+          ></ha-input>
 
-          <ha-textfield
+          <ha-input
             .label=${ft("editor.decimals",t)}
-            type="number"
+            .type=${"number"}
             .value=${String(this._config.decimals??1)}
             @input=${t=>{const e=parseInt(t.target.value,10);!isNaN(e)&&e>=0&&e<=3&&this._updateConfig({decimals:e})}}
-          ></ha-textfield>
+          ></ha-input>
         </div>
 
         <!-- Min / Max temperature overrides -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${ft("editor.min_temp",t)}
-            type="number"
-            .value=${this._config.min_temp??""}
+            .type=${"number"}
+            .value=${String(this._config.min_temp??"")}
             @input=${t=>{const e=t.target.value,i=parseFloat(e);this._updateConfig({min_temp:""===e||isNaN(i)?void 0:i})}}
-          ></ha-textfield>
+          ></ha-input>
 
-          <ha-textfield
+          <ha-input
             .label=${ft("editor.max_temp",t)}
-            type="number"
-            .value=${this._config.max_temp??""}
+            .type=${"number"}
+            .value=${String(this._config.max_temp??"")}
             @input=${t=>{const e=t.target.value,i=parseFloat(e);this._updateConfig({max_temp:""===e||isNaN(i)?void 0:i})}}
-          ></ha-textfield>
+          ></ha-input>
         </div>
 
         <!-- Toggle entity -->

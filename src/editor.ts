@@ -112,14 +112,14 @@ export class DiraThermostatEditor extends LitElement {
 
         <!-- Name + Icon -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${localize("editor.name", lang)}
             .value=${this._config.name ?? ""}
             @input=${(e: Event) =>
               this._updateConfig({
                 name: (e.target as HTMLInputElement).value || undefined,
               })}
-          ></ha-textfield>
+          ></ha-input>
 
           <ha-icon-picker
             .hass=${this._hass}
@@ -132,9 +132,9 @@ export class DiraThermostatEditor extends LitElement {
 
         <!-- Step size + Decimals -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${localize("editor.step_size", lang)}
-            type="number"
+            .type=${"number"}
             .value=${String(this._config.step_size ?? 0.5)}
             @input=${(e: Event) => {
               const val = parseFloat((e.target as HTMLInputElement).value);
@@ -142,11 +142,11 @@ export class DiraThermostatEditor extends LitElement {
                 this._updateConfig({ step_size: val });
               }
             }}
-          ></ha-textfield>
+          ></ha-input>
 
-          <ha-textfield
+          <ha-input
             .label=${localize("editor.decimals", lang)}
-            type="number"
+            .type=${"number"}
             .value=${String(this._config.decimals ?? 1)}
             @input=${(e: Event) => {
               const val = parseInt((e.target as HTMLInputElement).value, 10);
@@ -154,15 +154,15 @@ export class DiraThermostatEditor extends LitElement {
                 this._updateConfig({ decimals: val });
               }
             }}
-          ></ha-textfield>
+          ></ha-input>
         </div>
 
         <!-- Min / Max temperature overrides -->
         <div class="row">
-          <ha-textfield
+          <ha-input
             .label=${localize("editor.min_temp", lang)}
-            type="number"
-            .value=${this._config.min_temp ?? ""}
+            .type=${"number"}
+            .value=${String(this._config.min_temp ?? "")}
             @input=${(e: Event) => {
               const raw = (e.target as HTMLInputElement).value;
               const val = parseFloat(raw);
@@ -170,12 +170,12 @@ export class DiraThermostatEditor extends LitElement {
                 min_temp: raw === "" || isNaN(val) ? undefined : val,
               });
             }}
-          ></ha-textfield>
+          ></ha-input>
 
-          <ha-textfield
+          <ha-input
             .label=${localize("editor.max_temp", lang)}
-            type="number"
-            .value=${this._config.max_temp ?? ""}
+            .type=${"number"}
+            .value=${String(this._config.max_temp ?? "")}
             @input=${(e: Event) => {
               const raw = (e.target as HTMLInputElement).value;
               const val = parseFloat(raw);
@@ -183,7 +183,7 @@ export class DiraThermostatEditor extends LitElement {
                 max_temp: raw === "" || isNaN(val) ? undefined : val,
               });
             }}
-          ></ha-textfield>
+          ></ha-input>
         </div>
 
         <!-- Toggle entity -->
