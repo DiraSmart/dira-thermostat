@@ -86,8 +86,8 @@ A badge on the HVAC icon that toggles a separate entity (light, switch, etc.). T
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `header.toggle.entity` | string | **required** | Entity to toggle |
-| `header.toggle.icon_on` | string | `mdi:led-on` | Icon when on |
-| `header.toggle.icon_off` | string | `mdi:led-off` | Icon when off |
+| `header.toggle.icon_on` | string | `mdi:numeric` | Icon when on (blue) |
+| `header.toggle.icon_off` | string | `mdi:numeric-off` | Icon when off (gray) |
 
 #### Faults
 

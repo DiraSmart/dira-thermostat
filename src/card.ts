@@ -554,8 +554,8 @@ export class DiraThermostatCard extends LitElement {
 
     const isOn = entity.state === "on";
     const badgeIcon = isOn
-      ? (toggle.icon_on ?? "mdi:led-on")
-      : (toggle.icon_off ?? "mdi:led-off");
+      ? (toggle.icon_on ?? "mdi:numeric")
+      : (toggle.icon_off ?? "mdi:numeric-off");
 
     return html`
       <div class="toggle-badge ${isOn ? "on" : "off"}">

@@ -563,7 +563,7 @@
               `:G}
         </div>
       </div>
-    `}_handleToggle(t){const e=t.toggle;if(!e?.entity)return;const i=this._hass.states[e.entity];if(!i)return;const o="on"===i.state;this._hass.callService("homeassistant",o?"turn_off":"turn_on",{entity_id:e.entity}),St(this,"light")}_renderToggleBadge(t){const e=t.toggle;if(!e?.entity)return G;const i=this._hass.states[e.entity];if(!i)return G;const o="on"===i.state,s=o?e.icon_on??"mdi:led-on":e.icon_off??"mdi:led-off";return V`
+    `}_handleToggle(t){const e=t.toggle;if(!e?.entity)return;const i=this._hass.states[e.entity];if(!i)return;const o="on"===i.state;this._hass.callService("homeassistant",o?"turn_off":"turn_on",{entity_id:e.entity}),St(this,"light")}_renderToggleBadge(t){const e=t.toggle;if(!e?.entity)return G;const i=this._hass.states[e.entity];if(!i)return G;const o="on"===i.state,s=o?e.icon_on??"mdi:numeric":e.icon_off??"mdi:numeric-off";return V`
       <div class="toggle-badge ${o?"on":"off"}">
         <ha-icon .icon=${s}></ha-icon>
       </div>
