@@ -27,8 +27,8 @@ export function renderTemperature(
   const decimals = config.decimals ?? 1;
   const fallback = config.fallback ?? "N/A";
   const unit = getUnit(stateObj, config.unit);
-  const minTemp = attrs.min_temp ?? 7;
-  const maxTemp = attrs.max_temp ?? 35;
+  const minTemp = config.min_temp ?? attrs.min_temp ?? 7;
+  const maxTemp = config.max_temp ?? attrs.max_temp ?? 35;
 
   if (isDualSetpoint(stateObj)) {
     return renderDualSetpoint(

@@ -1,6 +1,6 @@
 import { LitElement, html, css, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
-import { HomeAssistant, DiraCardConfig, HeaderConfig } from "./types";
+import { HomeAssistant, DiraCardConfig, HeaderConfig, LayoutConfig } from "./types";
 import { fireEvent } from "./utils/fire-event";
 import { localize } from "./localize";
 
@@ -51,6 +51,35 @@ export class DiraThermostatEditor extends LitElement {
     }
 
     this._updateConfig({ control: obj as any });
+  }
+
+  private _getLayoutIcons(type: "hvac" | "fan" | "preset" | "swing"): boolean {
+    const typeLayout = this._config.layout?.[type];
+    return typeLayout?.icons !== false;
+  }
+
+  private _setLayoutIcons(
+    type: "hvac" | "fan" | "preset" | "swing",
+    value: boolean
+  ): void {
+    const layout: LayoutConfig = { ...(this._config.layout ?? {}) };
+    const typeLayout = { ...(layout[type] ?? {}) };
+
+    if (value) {
+      delete typeLayout.icons;
+    } else {
+      typeLayout.icons = false;
+    }
+
+    if (Object.keys(typeLayout).length > 0) {
+      layout[type] = typeLayout;
+    } else {
+      delete layout[type];
+    }
+
+    this._updateConfig({
+      layout: Object.keys(layout).length > 0 ? layout : undefined,
+    });
   }
 
   private _getHeaderConfig(): HeaderConfig {
@@ -128,6 +157,35 @@ export class DiraThermostatEditor extends LitElement {
           ></ha-textfield>
         </div>
 
+        <!-- Min / Max temperature overrides -->
+        <div class="row">
+          <ha-textfield
+            .label=${localize("editor.min_temp", lang)}
+            type="number"
+            .value=${this._config.min_temp ?? ""}
+            @input=${(e: Event) => {
+              const raw = (e.target as HTMLInputElement).value;
+              const val = parseFloat(raw);
+              this._updateConfig({
+                min_temp: raw === "" || isNaN(val) ? undefined : val,
+              });
+            }}
+          ></ha-textfield>
+
+          <ha-textfield
+            .label=${localize("editor.max_temp", lang)}
+            type="number"
+            .value=${this._config.max_temp ?? ""}
+            @input=${(e: Event) => {
+              const raw = (e.target as HTMLInputElement).value;
+              const val = parseFloat(raw);
+              this._updateConfig({
+                max_temp: raw === "" || isNaN(val) ? undefined : val,
+              });
+            }}
+          ></ha-textfield>
+        </div>
+
         <!-- Toggle entity -->
         <ha-entity-picker
           .hass=${this._hass}
@@ -173,6 +231,14 @@ export class DiraThermostatEditor extends LitElement {
               .checked=${this._getControlBool("fan")}
               @change=${(e: Event) =>
                 this._setControlBool("fan", (e.target as any).checked)}
+            ></ha-switch>
+          </ha-formfield>
+
+          <ha-formfield .label=${localize("editor.show_fan_icons", lang)}>
+            <ha-switch
+              .checked=${this._getLayoutIcons("fan")}
+              @change=${(e: Event) =>
+                this._setLayoutIcons("fan", (e.target as any).checked)}
             ></ha-switch>
           </ha-formfield>
 

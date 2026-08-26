@@ -111,17 +111,48 @@ export class DiraThermostatCard extends LitElement {
   private _getEffectiveControl(stateObj: HassEntity): ControlConfig | false {
     const control = this._normalizedControl;
     if (control === false) return false;
-    if (control === "auto") {
-      const result: ControlConfig = { hvac: true };
-      if (stateObj.attributes.fan_modes?.length > 0) result.fan = true;
-      if (stateObj.attributes.preset_modes?.length > 0) result.preset = true;
-      if (stateObj.attributes.swing_modes?.length > 0) result.swing = true;
-      return result;
-    }
-    return control as ControlConfig;
+
+    const auto: ControlConfig = { hvac: true };
+    if (stateObj.attributes.fan_modes?.length > 0) auto.fan = true;
+    if (stateObj.attributes.preset_modes?.length > 0) auto.preset = true;
+    if (stateObj.attributes.swing_modes?.length > 0) auto.swing = true;
+
+    if (control === "auto") return auto;
+
+    // Merge explicit overrides on top of the auto-detected defaults so that
+    // setting one key (e.g. `control: { fan: false }`) doesn't wipe out the
+    // others, which per the docs should keep defaulting to `true`/auto.
+    return { ...auto, ...(control as ControlConfig) };
   }
 
   // ---- Temperature Callbacks ----
+
+  private _getMinMax(stateObj: HassEntity): [number, number] {
+    const minTemp = this._config.min_temp ?? stateObj.attributes.min_temp ?? 7;
+    const maxTemp = this._config.max_temp ?? stateObj.attributes.max_temp ?? 35;
+    return [minTemp, maxTemp];
+  }
+
+  // Snap a value to the step grid anchored at minTemp, moving one step in
+  // the given direction. Anchoring to minTemp (rather than adding/subtracting
+  // from the current value directly) means a value that drifted off-grid -
+  // e.g. after being clamped to a device-reported min/max that isn't a clean
+  // multiple of the step - realigns to nice numbers instead of carrying that
+  // offset through every future press.
+  private _snapToGrid(
+    value: number,
+    step: number,
+    minTemp: number,
+    direction: 1 | -1
+  ): number {
+    const stepsFromMin = (value - minTemp) / step;
+    const nearestStep =
+      direction > 0
+        ? Math.floor(stepsFromMin + 1e-6)
+        : Math.ceil(stepsFromMin - 1e-6);
+    const newSteps = nearestStep + direction;
+    return Math.round((minTemp + newSteps * step) * 100) / 100;
+  }
 
   private _getTemperatureCallbacks(): TemperatureCallbacks {
     const stateObj = this._hass.states[this._config.entity];
@@ -133,22 +164,21 @@ export class DiraThermostatCard extends LitElement {
     }
     const step =
       this._config.step_size ?? stateObj.attributes.target_temp_step ?? 0.5;
+    const [minTemp] = this._getMinMax(stateObj);
 
     return {
       onIncrement: (key: string) => {
         const currentValue =
           this._pendingValues[key] ?? stateObj.attributes[key];
         if (currentValue === undefined) return;
-        const newValue =
-          Math.round((Number(currentValue) + step) * 10) / 10;
+        const newValue = this._snapToGrid(Number(currentValue), step, minTemp, 1);
         this._setPendingTemperature(key, newValue, stateObj);
       },
       onDecrement: (key: string) => {
         const currentValue =
           this._pendingValues[key] ?? stateObj.attributes[key];
         if (currentValue === undefined) return;
-        const newValue =
-          Math.round((Number(currentValue) - step) * 10) / 10;
+        const newValue = this._snapToGrid(Number(currentValue), step, minTemp, -1);
         this._setPendingTemperature(key, newValue, stateObj);
       },
     };
@@ -159,8 +189,7 @@ export class DiraThermostatCard extends LitElement {
     value: number,
     stateObj: HassEntity
   ): void {
-    const minTemp = stateObj.attributes.min_temp ?? 7;
-    const maxTemp = stateObj.attributes.max_temp ?? 35;
+    const [minTemp, maxTemp] = this._getMinMax(stateObj);
     const clamped = Math.max(minTemp, Math.min(maxTemp, value));
 
     this._pendingValues = { ...this._pendingValues, [key]: clamped };
@@ -413,8 +442,7 @@ export class DiraThermostatCard extends LitElement {
     const targetValue =
       this._pendingValues["temperature"] ?? stateObj.attributes.temperature;
     const isUpdating = this._pendingValues["temperature"] !== undefined;
-    const minTemp = stateObj.attributes.min_temp ?? 7;
-    const maxTemp = stateObj.attributes.max_temp ?? 35;
+    const [minTemp, maxTemp] = this._getMinMax(stateObj);
     const callbacks = this._getTemperatureCallbacks();
 
     const showIcon = icon !== false && headerConfig.icon !== false;
@@ -526,8 +554,8 @@ export class DiraThermostatCard extends LitElement {
 
     const isOn = entity.state === "on";
     const badgeIcon = isOn
-      ? (toggle.icon_on ?? "mdi:circle")
-      : (toggle.icon_off ?? "mdi:circle-outline");
+      ? (toggle.icon_on ?? "mdi:led-on")
+      : (toggle.icon_off ?? "mdi:led-off");
 
     return html`
       <div class="toggle-badge ${isOn ? "on" : "off"}">

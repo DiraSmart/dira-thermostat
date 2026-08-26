@@ -146,6 +146,8 @@ export interface DiraCardConfig {
   control?: ControlConfig | false;
   sensors?: SensorConfig[] | false;
   step_size?: number;
+  min_temp?: number;
+  max_temp?: number;
   decimals?: number;
   unit?: string | boolean;
   fallback?: string;

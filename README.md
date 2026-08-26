@@ -58,6 +58,8 @@ The card auto-detects available modes and displays them.
 | `name` | string | Entity name | Custom card name |
 | `icon` | string | Auto by mode | Custom icon (e.g. `mdi:air-conditioner`) |
 | `step_size` | number | `0.5` | Temperature step per button press |
+| `min_temp` | number | Entity `min_temp` | Override the minimum settable temperature |
+| `max_temp` | number | Entity `max_temp` | Override the maximum settable temperature |
 | `decimals` | number | `1` | Decimal places for temperature |
 | `unit` | string/boolean | Entity unit | Temperature unit. `false` to hide |
 | `fallback` | string | `"N/A"` | Text when value is unavailable |
@@ -84,8 +86,8 @@ A badge on the HVAC icon that toggles a separate entity (light, switch, etc.). T
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `header.toggle.entity` | string | **required** | Entity to toggle |
-| `header.toggle.icon_on` | string | `mdi:circle` | Icon when on |
-| `header.toggle.icon_off` | string | `mdi:circle-outline` | Icon when off |
+| `header.toggle.icon_on` | string | `mdi:led-on` | Icon when on |
+| `header.toggle.icon_off` | string | `mdi:led-off` | Icon when off |
 
 #### Faults
 
