@@ -627,8 +627,8 @@
             @change=${t=>{const e=t.target.value;this._updateConfig({unit:"auto"===e?void 0:e})}}
           >
             <option value="auto">${ft("editor.unit_auto",t)}</option>
-            <option value="°C">°C</option>
-            <option value="°F">°F</option>
+            <option value="C">C</option>
+            <option value="F">F</option>
           </select>
         </div>
 
