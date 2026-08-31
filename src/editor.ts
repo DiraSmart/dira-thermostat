@@ -168,9 +168,9 @@ export class DiraThermostatEditor extends LitElement {
               this._updateConfig({ unit: val === "auto" ? undefined : val });
             }}
           >
-            <option value="auto">${localize("editor.unit_auto", lang)}</option>
-            <option value="°C">°C</option>
-            <option value="F">F</option>
+            <option value="auto" style="color:#000;background:#fff;">${localize("editor.unit_auto", lang)}</option>
+            <option value="°C" style="color:#000;background:#fff;">°C</option>
+            <option value="F" style="color:#000;background:#fff;">F</option>
           </select>
         </div>
 
@@ -357,9 +357,6 @@ export class DiraThermostatEditor extends LitElement {
         border-radius: 4px;
         padding: 8px;
         height: 40px;
-      }
-      .native-select option {
-        color: initial;
       }
       .switches {
         display: grid;
