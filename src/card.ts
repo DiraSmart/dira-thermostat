@@ -507,7 +507,6 @@ export class DiraThermostatCard extends LitElement {
                   </button>
                   <div class="compact-temp ${isUpdating ? "updating" : ""}">
                     ${formatTemperature(targetValue, decimals)}
-                    <span class="unit">${unit}</span>
                   </div>
                   <button
                     class="temp-button"

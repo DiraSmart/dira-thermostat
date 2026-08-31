@@ -406,19 +406,13 @@
   }
 
   .compact-temp {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--primary-text-color);
     min-width: 50px;
     text-align: center;
     user-select: none;
     line-height: 1;
-  }
-
-  .compact-temp .unit {
-    font-size: 11px;
-    font-weight: 400;
-    color: var(--secondary-text-color);
   }
 
   .compact-temp.updating {
@@ -550,7 +544,6 @@
                   </button>
                   <div class="compact-temp ${$?"updating":""}">
                     ${Ct(v,m)}
-                    <span class="unit">${g}</span>
                   </div>
                   <button
                     class="temp-button"
