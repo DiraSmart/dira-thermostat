@@ -157,6 +157,21 @@ export class DiraThermostatEditor extends LitElement {
           ></ha-input>
         </div>
 
+        <!-- Unit override -->
+        <ha-select
+          .label=${localize("editor.unit", lang)}
+          .value=${typeof this._config.unit === "string" ? this._config.unit : "auto"}
+          @selected=${(e: CustomEvent) => {
+            const val = (e.target as any).value;
+            this._updateConfig({ unit: val === "auto" ? undefined : val });
+          }}
+          @closed=${(e: Event) => e.stopPropagation()}
+        >
+          <mwc-list-item value="auto">${localize("editor.unit_auto", lang)}</mwc-list-item>
+          <mwc-list-item value="°C">°C</mwc-list-item>
+          <mwc-list-item value="°F">°F</mwc-list-item>
+        </ha-select>
+
         <!-- Min / Max temperature overrides -->
         <div class="row">
           <ha-input
