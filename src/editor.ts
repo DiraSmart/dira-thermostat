@@ -158,19 +158,21 @@ export class DiraThermostatEditor extends LitElement {
         </div>
 
         <!-- Unit override -->
-        <ha-select
-          .label=${localize("editor.unit", lang)}
-          .value=${typeof this._config.unit === "string" ? this._config.unit : "auto"}
-          @selected=${(e: CustomEvent) => {
-            const val = (e.target as any).value;
-            this._updateConfig({ unit: val === "auto" ? undefined : val });
-          }}
-          @closed=${(e: Event) => e.stopPropagation()}
-        >
-          <mwc-list-item value="auto">${localize("editor.unit_auto", lang)}</mwc-list-item>
-          <mwc-list-item value="°C">°C</mwc-list-item>
-          <mwc-list-item value="°F">°F</mwc-list-item>
-        </ha-select>
+        <div class="field">
+          <label class="field-label">${localize("editor.unit", lang)}</label>
+          <select
+            class="native-select"
+            .value=${typeof this._config.unit === "string" ? this._config.unit : "auto"}
+            @change=${(e: Event) => {
+              const val = (e.target as HTMLSelectElement).value;
+              this._updateConfig({ unit: val === "auto" ? undefined : val });
+            }}
+          >
+            <option value="auto">${localize("editor.unit_auto", lang)}</option>
+            <option value="°C">°C</option>
+            <option value="°F">°F</option>
+          </select>
+        </div>
 
         <!-- Min / Max temperature overrides -->
         <div class="row">
@@ -337,6 +339,27 @@ export class DiraThermostatEditor extends LitElement {
       }
       .row > * {
         flex: 1;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .field-label {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+      }
+      .native-select {
+        font: inherit;
+        color: var(--primary-text-color);
+        background: transparent;
+        border: 1px solid var(--divider-color, rgba(255, 255, 255, 0.2));
+        border-radius: 4px;
+        padding: 8px;
+        height: 40px;
+      }
+      .native-select option {
+        color: initial;
       }
       .switches {
         display: grid;
